@@ -1,0 +1,238 @@
+{
+  "weekNumber": 1,
+  "theme": "Fun & Learning Through Play",
+  "days": [
+    {
+      "day": "Monday",
+      "theme": "Language & Storytelling Day",
+      "emoji": "📖",
+      "activities": [
+        {
+          "id": "mon-1",
+          "title": "Bilingual Story Swap",
+          "description": "Read a short book and pause to let her guess what happens next. Start in English, and ask her to continue in Spanish (or vice versa).",
+          "completed": false
+        },
+        {
+          "id": "mon-2",
+          "title": "Rhyming Basket Game",
+          "emoji": "🎵",
+          "description": "Pick an object (e.g., 'ball'), and challenge her to find something that rhymes ('wall'). Do this in both languages!",
+          "completed": false
+        },
+        {
+          "id": "mon-3",
+          "title": "Labeling the House",
+          "emoji": "🏠",
+          "description": "Use sticky notes to label chair/silla, door/puerta, etc. Have her walk around, say the words, and remove them one by one as a game.",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "day": "Tuesday",
+      "theme": "Dance & Movement Challenge",
+      "emoji": "💃",
+      "activities": [
+        {
+          "id": "tue-1",
+          "title": "Freeze Dance – Memory Mode",
+          "description": "Play one of her favorite dances but randomly pause the music and ask: 'What move comes next?' Let her show you!",
+          "completed": false
+        },
+        {
+          "id": "tue-2",
+          "title": "Animal Walk Races",
+          "emoji": "🦘",
+          "description": "Call out an animal, and she must move like it: Jump like a frog, Gallop like a horse, Crawl like a bear",
+          "completed": false
+        },
+        {
+          "id": "tue-3",
+          "title": "Skipping & Hopping Practice",
+          "emoji": "🏃‍♀️",
+          "description": "Try hopping on one foot (with support) and practice skipping in a fun, no-pressure way.",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "day": "Wednesday",
+      "theme": "Math & Problem-Solving",
+      "emoji": "🔢",
+      "activities": [
+        {
+          "id": "wed-1",
+          "title": "Number Jump",
+          "emoji": "🎲",
+          "description": "Lay out numbered papers (1-20) on the floor. Call out a number, and she must jump to it. Help her with 14 & 19!",
+          "completed": false
+        },
+        {
+          "id": "wed-2",
+          "title": "Sorting & Patterns Game",
+          "emoji": "🟡",
+          "description": "Give her objects to sort by color, shape, or size (buttons, socks, toys). Make color patterns and ask, 'What comes next?'",
+          "completed": false
+        },
+        {
+          "id": "wed-3",
+          "title": "DIY 'More or Less' Cooking Game",
+          "emoji": "🍽️",
+          "description": "Let her pour small amounts of rice into bowls. Ask, 'Which bowl has more?' Then switch them up!",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "day": "Thursday",
+      "theme": "Creativity & Fine Motor Fun",
+      "emoji": "🎨",
+      "activities": [
+        {
+          "id": "thu-1",
+          "title": "Shadow Drawing",
+          "emoji": "✏️",
+          "description": "Place a toy under a light and trace its shadow onto paper. Let her 'decorate' the shadow.",
+          "completed": false
+        },
+        {
+          "id": "thu-2",
+          "title": "DIY Lacing Beads",
+          "emoji": "🧵",
+          "description": "Thread large pasta pieces on a shoelace or pipe cleaner. Try making color patterns while threading!",
+          "completed": false
+        },
+        {
+          "id": "thu-3",
+          "title": "Kitchen Helper",
+          "emoji": "🍪",
+          "description": "Have her help mix, pour, and scoop ingredients while making something simple like pancakes.",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "day": "Friday",
+      "theme": "Music & Memory Day",
+      "emoji": "🎶",
+      "activities": [
+        {
+          "id": "fri-1",
+          "title": "Sound Matching Game",
+          "emoji": "🎵",
+          "description": "Play different sounds (claps, stomps, instruments) and ask her to match them by repeating the sound.",
+          "completed": false
+        },
+        {
+          "id": "fri-2",
+          "title": "Dance Instructor Mode",
+          "emoji": "💃",
+          "description": "Let her teach YOU a dance! Encourage her to give instructions like, 'Now spin! Now jump!'",
+          "completed": false
+        },
+        {
+          "id": "fri-3",
+          "title": "Sing & Translate",
+          "emoji": "🎤",
+          "description": "Take a familiar song and switch between Spanish & English as you sing.",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "day": "Saturday",
+      "theme": "Outdoor & STEM Exploration",
+      "emoji": "🌿",
+      "activities": [
+        {
+          "id": "sat-1",
+          "title": "Nature Color Hunt",
+          "emoji": "🌈",
+          "description": "Go outside and find objects that match colors: 'Find something red! Now something green!'",
+          "completed": false
+        },
+        {
+          "id": "sat-2",
+          "title": "Sink or Float Science",
+          "emoji": "🛁",
+          "description": "Give her different objects and have her guess if they will float or sink before testing.",
+          "completed": false
+        },
+        {
+          "id": "sat-3",
+          "title": "Build a 'Doll House'",
+          "emoji": "🏗️",
+          "description": "Let her stack boxes, blocks, or cushions to build a house for her dolls.",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "day": "Sunday",
+      "theme": "Pretend Play & Social Growth",
+      "emoji": "🎭",
+      "activities": [
+        {
+          "id": "sun-1",
+          "title": "Role-Playing 'Doctor'",
+          "emoji": "👩‍⚕️",
+          "description": "Give her a toy stethoscope or spoon as a 'doctor tool.' Pretend to be sick, and let her ask questions and 'treat' you.",
+          "completed": false
+        },
+        {
+          "id": "sun-2",
+          "title": "Playdate or Puppet Show",
+          "emoji": "🤝",
+          "description": "If she has a friend around, let them play freely. If not, use puppets to create a small conversation.",
+          "completed": false
+        },
+        {
+          "id": "sun-3",
+          "title": "Poop Storytime",
+          "emoji": "🚽",
+          "description": "Make up a story about a doll who is scared to poop. Act out the doll getting comfortable and using the potty.",
+          "completed": false
+        }
+      ]
+    }
+  ],
+  "recommendedBooks": {
+    "spanish": [
+      {
+        "title": "Cocorico",
+        "description": "A story about a chick that repeats fun sounds."
+      },
+      {
+        "title": "La Oruga Muy Hambrienta",
+        "description": "The Very Hungry Caterpillar - A classic!"
+      },
+      {
+        "title": "¿Dónde está el ombliguito?",
+        "description": "A lift-the-flap body parts book."
+      },
+      {
+        "title": "Un Beso en Mi Mano",
+        "description": "A heartwarming story about security and love."
+      }
+    ],
+    "english": [
+      {
+        "title": "Press Here",
+        "description": "Interactive book with cause-and-effect fun."
+      },
+      {
+        "title": "Brown Bear, Brown Bear, What Do You See?",
+        "description": "Simple but rhythmic reading."
+      },
+      {
+        "title": "Chicka Chicka Boom Boom",
+        "description": "Helps introduce letters in a fun way."
+      },
+      {
+        "title": "Little Blue Truck",
+        "description": "A great story with easy-to-follow dialogue."
+      }
+    ]
+  }
+} 
