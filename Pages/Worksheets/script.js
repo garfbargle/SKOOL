@@ -1,575 +1,432 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // DOM Elements
-    const activityTypeSelect = document.getElementById('activity-type');
-    const activityOptionsDiv = document.getElementById('activity-options');
-    const activityList = document.getElementById('activity-list');
-    const activityPlaceholder = document.getElementById('activity-placeholder');
-    const addActivityBtn = document.getElementById('add-activity-btn');
-    const generateButton = document.getElementById('generate-btn');
-    const worksheetTitle = document.getElementById('worksheet-title');
-    const worksheetContent = document.getElementById('worksheet-content');
-    const printButton = document.getElementById('print-btn');
-    const newButton = document.getElementById('new-btn');
-
-    // Store activities for the worksheet
-    let worksheetActivities = [];
-
-    // Emoji mappings for letter matching
-    const letterEmojiMap = {
-        'A': ['🍎', 'Apple'],
-        'B': ['🍌', 'Banana'],
-        'C': ['🍪', 'Cookie'],
-        'D': ['🦮', 'Dog'],
-        'E': ['🥚', 'Egg'],
-        'F': ['🐟', 'Fish'],
-        'G': ['🍇', 'Grapes'],
-        'H': ['🏠', 'House'],
-        'I': ['🍦', 'Ice cream'],
-        'J': ['🧃', 'Juice'],
-        'K': ['🪁', 'Kite'],
-        'L': ['🦁', 'Lion'],
-        'M': ['🌙', 'Moon'],
-        'N': ['📰', 'Newspaper'],
-        'O': ['🦉', 'Owl'],
-        'P': ['🥞', 'Pancakes'],
-        'Q': ['👸', 'Queen'],
-        'R': ['🌈', 'Rainbow'],
-        'S': ['🌞', 'Sun'],
-        'T': ['🐯', 'Tiger'],
-        'U': ['☂️', 'Umbrella'],
-        'V': ['🚐', 'Van'],
-        'W': ['🐺', 'Wolf'],
-        'X': ['🎸', 'Xylophone'],
-        'Y': ['🪀', 'Yo-yo'],
-        'Z': ['🦓', 'Zebra']
-    };
-
-    // Initial setup
-    updateActivityOptions();
-
-    // Event listeners
-    activityTypeSelect.addEventListener('change', updateActivityOptions);
-    addActivityBtn.addEventListener('click', addActivityToWorksheet);
-    generateButton.addEventListener('click', generateWorksheet);
-    printButton.addEventListener('click', printWorksheet);
-    newButton.addEventListener('click', resetWorksheet);
-
-    // Update options based on selected activity
-    function updateActivityOptions() {
-        const selectedActivity = activityTypeSelect.value;
-        activityOptionsDiv.innerHTML = '';
-
-        switch (selectedActivity) {
-            case 'letter-tracing':
-                activityOptionsDiv.innerHTML = `
-                    <div class="form-group">
-                        <label for="letters">Letters to trace:</label>
-                        <select id="letters">
-                            <option value="uppercase">Uppercase (A-Z)</option>
-                            <option value="lowercase">Lowercase (a-z)</option>
-                            <option value="vowels">Vowels (A, E, I, O, U)</option>
-                            <option value="consonants">Consonants (B, C, D, F, ...)</option>
-                            <option value="custom">Custom selection</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="custom-letters-container" style="display: none;">
-                        <label for="custom-letters">Enter letters (e.g., A B C):</label>
-                        <input type="text" id="custom-letters" placeholder="A B C D E">
-                    </div>
-                `;
-
-                const lettersSelect = document.getElementById('letters');
-                const customLettersContainer = document.getElementById('custom-letters-container');
-                
-                lettersSelect.addEventListener('change', () => {
-                    if (lettersSelect.value === 'custom') {
-                        customLettersContainer.style.display = 'block';
-                    } else {
-                        customLettersContainer.style.display = 'none';
-                    }
-                });
-                break;
-
-            case 'number-tracing':
-                activityOptionsDiv.innerHTML = `
-                    <div class="form-group">
-                        <label for="numbers">Numbers to trace:</label>
-                        <select id="numbers">
-                            <option value="1-10">1 to 10</option>
-                            <option value="1-20">1 to 20</option>
-                            <option value="custom">Custom selection</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="custom-numbers-container" style="display: none;">
-                        <label for="custom-numbers">Enter numbers (e.g., 1 2 3):</label>
-                        <input type="text" id="custom-numbers" placeholder="1 2 3 4 5">
-                    </div>
-                `;
-
-                const numbersSelect = document.getElementById('numbers');
-                const customNumbersContainer = document.getElementById('custom-numbers-container');
-                
-                numbersSelect.addEventListener('change', () => {
-                    if (numbersSelect.value === 'custom') {
-                        customNumbersContainer.style.display = 'block';
-                    } else {
-                        customNumbersContainer.style.display = 'none';
-                    }
-                });
-                break;
-
-            case 'letter-emoji-matching':
-                activityOptionsDiv.innerHTML = `
-                    <div class="form-group">
-                        <label for="matching-option">Letters to match:</label>
-                        <select id="matching-option">
-                            <option value="first-half">First half (A-M)</option>
-                            <option value="second-half">Second half (N-Z)</option>
-                            <option value="vowels">Vowels only</option>
-                            <option value="custom">Custom selection</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="custom-matching-container" style="display: none;">
-                        <label for="custom-matching">Enter letters (e.g., A B C):</label>
-                        <input type="text" id="custom-matching" placeholder="A B C D E">
-                    </div>
-                `;
-
-                const matchingSelect = document.getElementById('matching-option');
-                const customMatchingContainer = document.getElementById('custom-matching-container');
-                
-                matchingSelect.addEventListener('change', () => {
-                    if (matchingSelect.value === 'custom') {
-                        customMatchingContainer.style.display = 'block';
-                    } else {
-                        customMatchingContainer.style.display = 'none';
-                    }
-                });
-                break;
-        }
+// Activity data
+const ACTIVITIES = {
+    letterTracing: {
+        title: "Letter Tracing",
+        generator: generateLetterTracing
+    },
+    numberTracing: {
+        title: "Number Tracing",
+        generator: generateNumberTracing
+    },
+    matchLetterToEmoji: {
+        title: "Match Letters to Pictures",
+        generator: generateLetterMatching
+    },
+    circleCorrectLetter: {
+        title: "Circle the Correct Letter",
+        generator: generateCircleCorrectLetter
+    },
+    countAndCircle: {
+        title: "Count and Circle",
+        generator: generateCountAndCircle
+    },
+    matchNumberToObjects: {
+        title: "Match Number to Objects",
+        generator: generateMatchNumberToObjects
+    },
+    sortByCategory: {
+        title: "Sort by Category",
+        generator: generateSortByCategory
+    },
+    oddOneOut: {
+        title: "Find the Odd One Out",
+        generator: generateOddOneOut
+    },
+    completePattern: {
+        title: "Complete the Pattern",
+        generator: generateCompletePattern
+    },
+    dotToDot: {
+        title: "Connect the Dots",
+        generator: generateDotToDot
     }
+};
 
-    // Add the current activity configuration to the worksheet
-    function addActivityToWorksheet() {
-        const activityType = activityTypeSelect.value;
-        let activityConfig = {
-            type: activityType,
-            options: {}
-        };
+// Emojis by category for activities
+const EMOJIS = {
+    animals: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆', '🦉'],
+    fruits: ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥'],
+    vehicles: ['🚗', '🚕', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚚', '🚛', '🚜', '🛴', '🚲', '✈️', '🚂', '🚤', '🚁'],
+    shapes: ['⭐', '⚡', '☁️', '⛄', '🌈', '🔺', '⚪', '◼️', '🔶', '💫'],
+    food: ['🍕', '🍔', '🍟', '🌭', '🍿', '🧁', '🍩', '🍪', '🍦', '🍫', '🍭', '🍡', '🥞', '🧇'],
+    faces: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🙂', '😊', '😇', '🥰', '😍', '🤩', '😋', '😛', '😜', '🤪', '😝']
+};
 
-        // Collect options based on activity type
-        switch (activityType) {
-            case 'letter-tracing':
-                const lettersOption = document.getElementById('letters').value;
-                activityConfig.options.lettersOption = lettersOption;
-                
-                if (lettersOption === 'custom') {
-                    activityConfig.options.customLetters = document.getElementById('custom-letters').value.trim();
-                }
-                
-                activityConfig.title = 'Letter Tracing';
-                activityConfig.description = getActivityDescription(activityType, activityConfig.options);
-                break;
-                
-            case 'number-tracing':
-                const numbersOption = document.getElementById('numbers').value;
-                activityConfig.options.numbersOption = numbersOption;
-                
-                if (numbersOption === 'custom') {
-                    activityConfig.options.customNumbers = document.getElementById('custom-numbers').value.trim();
-                }
-                
-                activityConfig.title = 'Number Tracing';
-                activityConfig.description = getActivityDescription(activityType, activityConfig.options);
-                break;
-                
-            case 'letter-emoji-matching':
-                const matchingOption = document.getElementById('matching-option').value;
-                activityConfig.options.matchingOption = matchingOption;
-                
-                if (matchingOption === 'custom') {
-                    activityConfig.options.customMatching = document.getElementById('custom-matching').value.trim();
-                }
-                
-                activityConfig.title = 'Match Letter to Picture';
-                activityConfig.description = getActivityDescription(activityType, activityConfig.options);
-                break;
-        }
+// Letter-emoji associations for matching activities
+const LETTER_EMOJI_PAIRS = {
+    'A': ['🍎', '🐜', '🦅', '👽'],
+    'B': ['🐝', '🍌', '🧸', '📚'],
+    'C': ['🐱', '🍪', '🧁', '🥕'],
+    'D': ['🐶', '🦌', '🍩', '💎'],
+    'E': ['🥚', '🐘', '👁️', '📧'],
+    'F': ['🐟', '🦊', '🍟', '🔥'],
+    'G': ['🦒', '🍇', '🦍', '🎮'],
+    'H': ['🏠', '🐹', '🧢', '🔨'],
+    'I': ['🍦', '🦔', '👁️', '🏝️'],
+    'J': ['🤹', '🕹️', '🧃', '👖'],
+    'K': ['🪁', '🔑', '🦘', '🧪'],
+    'L': ['🦁', '🍋', '🦎', '🪵'],
+    'M': ['🐵', '🌙', '🍈', '🎵'],
+    'N': ['👃', '📰', '🥜', '📝'],
+    'O': ['🐙', '🍊', '👌', '⭕'],
+    'P': ['🐼', '🍐', '🖊️', '📱'],
+    'Q': ['👸', '🥗', '❓', '🔍'],
+    'R': ['🐇', '🌈', '🤖', '🌹'],
+    'S': ['🐍', '⭐', '🍓', '☀️'],
+    'T': ['🐯', '🌮', '🌲', '🎪'],
+    'U': ['🦄', '☂️', '⬆️', '🧠'],
+    'V': ['🦺', '🏐', '🌋', '🧛'],
+    'W': ['🐺', '🌊', '🚶', '⌚'],
+    'X': ['📦', '❌', '🎸', '🎮'],
+    'Y': ['🧶', '🪀', '💴', '🧒'],
+    'Z': ['🦓', '⚡', '🧟', '🦊']
+};
 
-        // Add to activities array
-        worksheetActivities.push(activityConfig);
-        
-        // Update activity list UI
-        updateActivityListUI();
-    }
+// DOM Elements
+const worksheetContainer = document.getElementById('activities-container');
+const generateBtn = document.getElementById('generate-btn');
+const downloadBtn = document.getElementById('download-btn');
 
-    // Get a human-readable description of the activity
-    function getActivityDescription(type, options) {
-        switch (type) {
-            case 'letter-tracing':
-                switch (options.lettersOption) {
-                    case 'uppercase': return 'Uppercase letters (A-Z)';
-                    case 'lowercase': return 'Lowercase letters (a-z)';
-                    case 'vowels': return 'Vowels (A, E, I, O, U)';
-                    case 'consonants': return 'Consonants (B, C, D, F, ...)';
-                    case 'custom': return `Custom letters: ${options.customLetters || 'A B C'}`;
-                }
-                break;
-                
-            case 'number-tracing':
-                switch (options.numbersOption) {
-                    case '1-10': return 'Numbers 1 to 10';
-                    case '1-20': return 'Numbers 1 to 20';
-                    case 'custom': return `Custom numbers: ${options.customNumbers || '1 2 3 4 5'}`;
-                }
-                break;
-                
-            case 'letter-emoji-matching':
-                switch (options.matchingOption) {
-                    case 'first-half': return 'Match letters A-M with pictures';
-                    case 'second-half': return 'Match letters N-Z with pictures';
-                    case 'vowels': return 'Match vowels with pictures';
-                    case 'custom': return `Match custom letters: ${options.customMatching || 'A B C D E'}`;
-                }
-                break;
-        }
-        
-        return 'Activity';
-    }
+// Event Listeners
+document.addEventListener('DOMContentLoaded', generateWorksheet);
+generateBtn.addEventListener('click', generateWorksheet);
+downloadBtn.addEventListener('click', downloadWorksheet);
 
-    // Update the activity list UI
-    function updateActivityListUI() {
-        if (worksheetActivities.length === 0) {
-            activityPlaceholder.style.display = 'block';
-            activityList.innerHTML = '';
-            activityList.appendChild(activityPlaceholder);
-            return;
-        }
-        
-        activityPlaceholder.style.display = 'none';
-        activityList.innerHTML = '';
-        
-        worksheetActivities.forEach((activity, index) => {
-            const activityItem = document.createElement('div');
-            activityItem.className = 'activity-item';
-            activityItem.innerHTML = `
-                <div class="activity-info">
-                    <strong>${activity.title}</strong>: ${activity.description}
-                </div>
-                <div class="activity-controls">
-                    ${index > 0 ? `<button class="move-up-btn" data-index="${index}">↑</button>` : ''}
-                    ${index < worksheetActivities.length - 1 ? `<button class="move-down-btn" data-index="${index}">↓</button>` : ''}
-                    <button class="remove-btn" data-index="${index}">✕</button>
-                </div>
-            `;
-            
-            activityList.appendChild(activityItem);
-        });
-        
-        // Add event listeners for activity controls
-        document.querySelectorAll('.move-up-btn').forEach(btn => {
-            btn.addEventListener('click', moveActivityUp);
-        });
-        
-        document.querySelectorAll('.move-down-btn').forEach(btn => {
-            btn.addEventListener('click', moveActivityDown);
-        });
-        
-        document.querySelectorAll('.remove-btn').forEach(btn => {
-            btn.addEventListener('click', removeActivity);
-        });
-    }
+// Main Functions
+function generateWorksheet() {
+    // Clear previous worksheet
+    worksheetContainer.innerHTML = '';
+    
+    // Select 4-6 random activities
+    const numActivities = getRandomInt(4, 6);
+    const selectedActivities = selectRandomActivities(numActivities);
+    
+    // Generate each activity
+    selectedActivities.forEach(activity => {
+        const activityElement = createActivityElement(activity.title, activity.generator());
+        worksheetContainer.appendChild(activityElement);
+    });
+}
 
-    // Move activity up in the list
-    function moveActivityUp(e) {
-        const index = parseInt(e.target.dataset.index);
-        if (index > 0) {
-            // Swap with previous activity
-            [worksheetActivities[index], worksheetActivities[index - 1]] = 
-            [worksheetActivities[index - 1], worksheetActivities[index]];
-            updateActivityListUI();
-        }
-    }
+function downloadWorksheet() {
+    const element = document.getElementById('worksheet');
+    
+    // Use html2canvas to capture the worksheet as an image
+    html2canvas(element, { scale: 2 }).then(canvas => {
+        // Create a PDF using jsPDF
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        // Calculate aspect ratio to fit A4
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 210;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        pdf.save('fun-worksheet.pdf');
+    });
+}
 
-    // Move activity down in the list
-    function moveActivityDown(e) {
-        const index = parseInt(e.target.dataset.index);
-        if (index < worksheetActivities.length - 1) {
-            // Swap with next activity
-            [worksheetActivities[index], worksheetActivities[index + 1]] = 
-            [worksheetActivities[index + 1], worksheetActivities[index]];
-            updateActivityListUI();
-        }
-    }
+// Helper Functions
+function selectRandomActivities(count) {
+    const activityKeys = Object.keys(ACTIVITIES);
+    const shuffled = [...activityKeys].sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, count);
+    
+    return selected.map(key => ({
+        title: ACTIVITIES[key].title,
+        generator: ACTIVITIES[key].generator
+    }));
+}
 
-    // Remove activity from the list
-    function removeActivity(e) {
-        const index = parseInt(e.target.dataset.index);
-        worksheetActivities.splice(index, 1);
-        updateActivityListUI();
-    }
+function createActivityElement(title, content) {
+    const activityDiv = document.createElement('div');
+    activityDiv.className = 'activity';
+    
+    const titleElement = document.createElement('h3');
+    titleElement.className = 'activity-title';
+    titleElement.textContent = title;
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'activity-content';
+    contentDiv.innerHTML = content;
+    
+    activityDiv.appendChild(titleElement);
+    activityDiv.appendChild(contentDiv);
+    
+    return activityDiv;
+}
 
-    // Generate worksheet with all activities
-    function generateWorksheet() {
-        if (worksheetActivities.length === 0) {
-            alert('Please add at least one activity to the worksheet!');
-            return;
-        }
-        
-        // Clear current content
-        worksheetContent.innerHTML = '';
-        
-        // Generate each activity
-        worksheetActivities.forEach((activity, index) => {
-            const activitySection = document.createElement('div');
-            activitySection.className = 'activity-section';
-            
-            // Add activity title with print-friendly class
-            const activityTitle = document.createElement('h3');
-            activityTitle.className = 'print-activity-title';
-            activityTitle.textContent = `Activity ${index + 1}: ${activity.title}`;
-            activitySection.appendChild(activityTitle);
-            
-            // Add a brief description/instruction for the activity
-            const activityDescription = document.createElement('p');
-            activityDescription.className = 'print-activity-description';
-            activityDescription.textContent = activity.description;
-            activitySection.appendChild(activityDescription);
-            
-            // Generate activity content based on type
-            let activityContent;
-            switch (activity.type) {
-                case 'letter-tracing':
-                    activityContent = generateLetterTracingContent(activity.options);
-                    break;
-                case 'number-tracing':
-                    activityContent = generateNumberTracingContent(activity.options);
-                    break;
-                case 'letter-emoji-matching':
-                    activityContent = generateLetterEmojiMatchingContent(activity.options);
-                    break;
-            }
-            
-            activitySection.appendChild(activityContent);
-            worksheetContent.appendChild(activitySection);
-        });
-    }
-
-    // Generate letter tracing content
-    function generateLetterTracingContent(options) {
-        let letters = [];
-        
-        switch (options.lettersOption) {
-            case 'uppercase':
-                letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-                break;
-            case 'lowercase':
-                letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
-                break;
-            case 'vowels':
-                letters = 'AEIOU'.split('');
-                break;
-            case 'consonants':
-                letters = 'BCDFGHJKLMNPQRSTVWXYZ'.split('');
-                break;
-            case 'custom':
-                if (options.customLetters) {
-                    // Split by spaces or commas
-                    letters = options.customLetters.split(/[\s,]+/);
-                } else {
-                    letters = 'ABC'.split('');
-                }
-                break;
-        }
-        
-        // Limit to a reasonable number for a grid layout
-        if (letters.length > 15) {
-            letters = letters.slice(0, 15);
-        }
-        
-        const container = document.createElement('div');
-        container.className = 'activity-content';
-        
-        // Add instructions
-        const instructions = document.createElement('div');
-        instructions.className = 'worksheet-instructions print-visible';
-        instructions.innerHTML = '<p>Trace over each letter with your pencil. Follow the dotted outlines!</p>';
-        container.appendChild(instructions);
-        
-        // Add tracing items
-        const tracingContainer = document.createElement('div');
-        tracingContainer.className = 'tracing-container';
-        
-        letters.forEach(letter => {
-            const tracingItem = document.createElement('div');
-            tracingItem.className = 'tracing-item';
-            
-            const tracingLetter = document.createElement('div');
-            tracingLetter.className = 'tracing-letter';
-            tracingLetter.textContent = letter;
-            tracingLetter.setAttribute('data-letter', letter); // Used for the outlined version
-            
-            tracingItem.appendChild(tracingLetter);
-            tracingContainer.appendChild(tracingItem);
-        });
-        
-        container.appendChild(tracingContainer);
-        return container;
+// Activity Generators
+function generateLetterTracing() {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let selectedLetters = '';
+    
+    // Select 4-6 random letters
+    for (let i = 0; i < getRandomInt(4, 6); i++) {
+        selectedLetters += letters.charAt(getRandomInt(0, letters.length - 1));
     }
     
-    // Generate number tracing content
-    function generateNumberTracingContent(options) {
-        let numbers = [];
-        
-        switch (options.numbersOption) {
-            case '1-10':
-                numbers = Array.from({length: 10}, (_, i) => i + 1);
-                break;
-            case '1-20':
-                numbers = Array.from({length: 20}, (_, i) => i + 1);
-                break;
-            case 'custom':
-                if (options.customNumbers) {
-                    // Split by spaces or commas and convert to numbers
-                    numbers = options.customNumbers.split(/[\s,]+/)
-                              .map(n => parseInt(n))
-                              .filter(n => !isNaN(n));
-                } else {
-                    numbers = [1, 2, 3, 4, 5];
-                }
-                break;
-        }
-        
-        // Limit to a reasonable number for a grid layout
-        if (numbers.length > 15) {
-            numbers = numbers.slice(0, 15);
-        }
-        
-        const container = document.createElement('div');
-        container.className = 'activity-content';
-        
-        // Add instructions
-        const instructions = document.createElement('div');
-        instructions.className = 'worksheet-instructions print-visible';
-        instructions.innerHTML = '<p>Trace over each number with your pencil. Follow the dotted outlines!</p>';
-        container.appendChild(instructions);
-        
-        // Add tracing items
-        const tracingContainer = document.createElement('div');
-        tracingContainer.className = 'tracing-container';
-        
-        numbers.forEach(number => {
-            const tracingItem = document.createElement('div');
-            tracingItem.className = 'tracing-item';
-            
-            const tracingNumber = document.createElement('div');
-            tracingNumber.className = 'tracing-number';
-            tracingNumber.textContent = number;
-            tracingNumber.setAttribute('data-letter', number); // Used for the outlined version
-            
-            tracingItem.appendChild(tracingNumber);
-            tracingContainer.appendChild(tracingItem);
-        });
-        
-        container.appendChild(tracingContainer);
-        return container;
+    return `<div class="letter-tracing">${selectedLetters}</div>
+            <p>Trace the letters above</p>`;
+}
+
+function generateNumberTracing() {
+    const numbers = '0123456789';
+    let selectedNumbers = '';
+    
+    // Select 4-6 random numbers
+    for (let i = 0; i < getRandomInt(4, 6); i++) {
+        selectedNumbers += numbers.charAt(getRandomInt(0, numbers.length - 1));
     }
     
-    // Generate letter-emoji matching content
-    function generateLetterEmojiMatchingContent(options) {
-        let letters = [];
-        
-        switch (options.matchingOption) {
-            case 'first-half':
-                letters = 'ABCDEFGHIJKLM'.split('');
-                break;
-            case 'second-half':
-                letters = 'NOPQRSTUVWXYZ'.split('');
-                break;
-            case 'vowels':
-                letters = 'AEIOU'.split('');
-                break;
-            case 'custom':
-                if (options.customMatching) {
-                    // Split by spaces or commas and convert to uppercase
-                    letters = options.customMatching.split(/[\s,]+/).map(l => l.toUpperCase());
-                } else {
-                    letters = 'ABCDE'.split('');
-                }
-                break;
+    return `<div class="number-tracing">${selectedNumbers}</div>
+            <p>Trace the numbers above</p>`;
+}
+
+function generateLetterMatching() {
+    // Get 3 random letters
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const letters = [];
+    
+    while (letters.length < 3) {
+        const letter = alphabet.charAt(getRandomInt(0, alphabet.length - 1));
+        if (!letters.includes(letter)) {
+            letters.push(letter);
         }
-        
-        // Limit to a reasonable number per activity
-        if (letters.length > 6) {
-            letters = letters.slice(0, 6);
-        }
-        
-        // Filter letters to only include those with emoji mappings
-        letters = letters.filter(letter => letterEmojiMap[letter]);
-        
-        const container = document.createElement('div');
-        container.className = 'activity-content';
-        
-        // Add instructions
-        const instructions = document.createElement('div');
-        instructions.className = 'worksheet-instructions print-visible';
-        instructions.innerHTML = '<p>Draw a line to match each letter with the correct picture:</p>';
-        container.appendChild(instructions);
-        
-        // Add matching items
-        const matchingContainer = document.createElement('div');
-        matchingContainer.className = 'matching-container';
-        
-        letters.forEach(letter => {
-            const matchingItem = document.createElement('div');
-            matchingItem.className = 'matching-item';
-            
-            const matchingLetter = document.createElement('div');
-            matchingLetter.className = 'matching-letter';
-            matchingLetter.textContent = letter;
-            
-            const matchingConnector = document.createElement('div');
-            matchingConnector.className = 'matching-connector';
-            
-            const matchingEmoji = document.createElement('div');
-            matchingEmoji.className = 'matching-emoji';
-            matchingEmoji.title = letterEmojiMap[letter][1];
-            matchingEmoji.textContent = letterEmojiMap[letter][0];
-            
-            matchingItem.appendChild(matchingLetter);
-            matchingItem.appendChild(matchingConnector);
-            matchingItem.appendChild(matchingEmoji);
-            matchingContainer.appendChild(matchingItem);
-        });
-        
-        container.appendChild(matchingContainer);
-        return container;
     }
-
-    // Helper function to generate tracing lines - no longer needed but keeping for compatibility
-    function generateTracingLines(count) {
-        return '';
-    }
-
-    // Print the worksheet
-    function printWorksheet() {
-        // Make sure all print-specific elements are visible
-        document.querySelectorAll('.print-activity-title, .print-activity-description, .print-visible').forEach(el => {
-            el.style.display = 'block';
-        });
-        
-        window.print();
-    }
-
-    // Reset the worksheet and activities
-    function resetWorksheet() {
-        worksheetActivities = [];
-        updateActivityListUI();
-        
-        worksheetContent.innerHTML = `
-            <div class="placeholder-message">
-                Select activities and generate a worksheet to see preview
+    
+    let html = '<div class="matching">';
+    
+    letters.forEach(letter => {
+        const emoji = LETTER_EMOJI_PAIRS[letter][getRandomInt(0, LETTER_EMOJI_PAIRS[letter].length - 1)];
+        html += `
+            <div class="matching-item">
+                <span class="big-emoji">${letter}</span>
+                <span>→</span>
+                <span class="big-emoji">${emoji}</span>
             </div>
         `;
+    });
+    
+    html += '</div><p>Draw a line to match each letter with its picture</p>';
+    return html;
+}
+
+function generateCircleCorrectLetter() {
+    // Select a random letter
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const targetLetter = alphabet.charAt(getRandomInt(0, alphabet.length - 1));
+    
+    // Create array of letters with multiple instances of the target letter
+    const letters = [];
+    for (let i = 0; i < 15; i++) {
+        if (i % 3 === 0) {
+            letters.push(targetLetter);
+        } else {
+            // Add a random letter that's not the target
+            let randomLetter;
+            do {
+                randomLetter = alphabet.charAt(getRandomInt(0, alphabet.length - 1));
+            } while (randomLetter === targetLetter);
+            letters.push(randomLetter);
+        }
     }
-}); 
+    
+    // Shuffle the array
+    const shuffledLetters = letters.sort(() => 0.5 - Math.random());
+    
+    let html = `<p>Circle all the letter "${targetLetter}"</p>`;
+    html += '<div class="circle-items">';
+    
+    shuffledLetters.forEach(letter => {
+        html += `<span class="big-emoji">${letter}</span>`;
+    });
+    
+    html += '</div>';
+    return html;
+}
+
+function generateCountAndCircle() {
+    // Random number between 1-5
+    const targetNumber = getRandomInt(1, 5);
+    
+    // Create sets of emojis
+    const html = `
+        <p>Circle the group that has ${targetNumber} items</p>
+        <div class="circle-items">
+    `;
+    
+    const groups = [];
+    // Create 4 groups with different counts
+    for (let i = 1; i <= 5; i++) {
+        if (i === targetNumber) {
+            // We need two groups with the target number
+            groups.push(createEmojiGroup(i));
+            groups.push(createEmojiGroup(i));
+        } else {
+            groups.push(createEmojiGroup(i));
+        }
+    }
+    
+    return html + groups.sort(() => 0.5 - Math.random()).join('') + '</div>';
+}
+
+function createEmojiGroup(count) {
+    const category = getRandomCategory();
+    const emojis = [];
+    
+    for (let i = 0; i < count; i++) {
+        const randomIndex = getRandomInt(0, EMOJIS[category].length - 1);
+        emojis.push(EMOJIS[category][randomIndex]);
+    }
+    
+    return `<div class="counting-item">${emojis.join('')}</div>`;
+}
+
+function generateMatchNumberToObjects() {
+    const numbers = [1, 2, 3, 4, 5];
+    const selectedNumbers = numbers.sort(() => 0.5 - Math.random()).slice(0, 3);
+    
+    let html = '<div class="matching">';
+    
+    selectedNumbers.forEach(number => {
+        const category = getRandomCategory();
+        const emojis = [];
+        
+        for (let i = 0; i < number; i++) {
+            const randomIndex = getRandomInt(0, EMOJIS[category].length - 1);
+            emojis.push(EMOJIS[category][randomIndex]);
+        }
+        
+        html += `
+            <div class="matching-item">
+                <span class="big-emoji">${number}</span>
+                <span>→</span>
+                <span>${emojis.join('')}</span>
+            </div>
+        `;
+    });
+    
+    html += '</div><p>Match each number with the correct number of objects</p>';
+    return html;
+}
+
+function generateSortByCategory() {
+    // Select two random categories
+    const categories = Object.keys(EMOJIS);
+    const selectedCategories = categories.sort(() => 0.5 - Math.random()).slice(0, 2);
+    
+    const items = [];
+    
+    // Add 3 items from each category
+    selectedCategories.forEach(category => {
+        const categoryEmojis = EMOJIS[category].sort(() => 0.5 - Math.random()).slice(0, 3);
+        categoryEmojis.forEach(emoji => items.push(emoji));
+    });
+    
+    // Shuffle the items
+    const shuffledItems = items.sort(() => 0.5 - Math.random());
+    
+    const categoryLabels = {
+        'animals': 'Animals',
+        'fruits': 'Fruits',
+        'vehicles': 'Vehicles',
+        'shapes': 'Shapes',
+        'food': 'Food',
+        'faces': 'Faces'
+    };
+    
+    let html = `<p>Circle the ${categoryLabels[selectedCategories[0]]} and cross out the ${categoryLabels[selectedCategories[1]]}</p>`;
+    html += '<div class="sorting-item">';
+    
+    shuffledItems.forEach(item => {
+        html += `<span class="emoji">${item}</span>`;
+    });
+    
+    html += '</div>';
+    return html;
+}
+
+function generateOddOneOut() {
+    // Select a random category
+    const categories = Object.keys(EMOJIS);
+    const mainCategory = categories[getRandomInt(0, categories.length - 1)];
+    
+    // Get a different category for the odd one out
+    let oddCategory;
+    do {
+        oddCategory = categories[getRandomInt(0, categories.length - 1)];
+    } while (oddCategory === mainCategory);
+    
+    // Get 3 items from the main category
+    const mainItems = EMOJIS[mainCategory].sort(() => 0.5 - Math.random()).slice(0, 3);
+    
+    // Get 1 item from the odd category
+    const oddItem = EMOJIS[oddCategory][getRandomInt(0, EMOJIS[oddCategory].length - 1)];
+    
+    // Combine and shuffle
+    const allItems = [...mainItems, oddItem].sort(() => 0.5 - Math.random());
+    
+    let html = '<p>Circle the one that does not belong in the group</p>';
+    html += '<div class="sorting-item">';
+    
+    allItems.forEach(item => {
+        html += `<span class="emoji">${item}</span>`;
+    });
+    
+    html += '</div>';
+    return html;
+}
+
+function generateCompletePattern() {
+    // Create a simple pattern with emojis
+    const category = getRandomCategory();
+    const emojis = EMOJIS[category].sort(() => 0.5 - Math.random()).slice(0, 3);
+    
+    let patternType = getRandomInt(1, 3);
+    let pattern = '';
+    
+    if (patternType === 1) {
+        // ABABAB pattern
+        pattern = `${emojis[0]} ${emojis[1]} ${emojis[0]} ${emojis[1]} <div class="missing"></div>`;
+    } else if (patternType === 2) {
+        // ABCABC pattern
+        pattern = `${emojis[0]} ${emojis[1]} ${emojis[2]} ${emojis[0]} <div class="missing"></div>`;
+    } else {
+        // AABAA pattern
+        pattern = `${emojis[0]} ${emojis[0]} ${emojis[1]} ${emojis[0]} <div class="missing"></div>`;
+    }
+    
+    return `
+        <p>What comes next in the pattern?</p>
+        <div class="pattern">
+            ${pattern}
+        </div>
+    `;
+}
+
+function generateDotToDot() {
+    let dotsHtml = '<div class="dots-container">';
+    
+    for (let i = 1; i <= 10; i++) {
+        dotsHtml += `<div class="dot">${i}</div>`;
+    }
+    
+    dotsHtml += '</div>';
+    
+    return `
+        <p>Connect the dots in order from 1 to 10</p>
+        ${dotsHtml}
+    `;
+}
+
+// Utility Functions
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getRandomCategory() {
+    const categories = Object.keys(EMOJIS);
+    return categories[getRandomInt(0, categories.length - 1)];
+}
