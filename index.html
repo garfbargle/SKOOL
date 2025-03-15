@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skool - Main Page</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        .description {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            margin-bottom: 2rem;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        .nav-card {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .nav-card:hover {
+            transform: translateY(-5px);
+        }
+        .nav-card h2 {
+            color: #3498db;
+            margin-bottom: 1rem;
+        }
+        .nav-card p {
+            margin-bottom: 1.5rem;
+            color: #5f6368;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Welcome to Skool</h1>
+            <p class="description">Your educational resource hub</p>
+        </header>
+        
+        <div class="navigation">
+            <div class="nav-card">
+                <h2>Recommendations</h2>
+                <p>Explore curated educational resources and recommendations for your learning journey.</p>
+                <a href="./Pages/Recomendations/index.html" class="btn">View Recommendations</a>
+            </div>
+            
+            <div class="nav-card">
+                <h2>Worksheets</h2>
+                <p>Access interactive worksheets and learning materials to enhance your studies.</p>
+                <a href="./Pages/Worksheets/index.html" class="btn">Access Worksheets</a>
+            </div>
+        </div>
+        
+        <footer>
+            <p>&copy; 2023 Skool. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html> 
