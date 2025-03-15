@@ -3,43 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalia's Learning Adventure 🌟</title>
-    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <title>Ms. Apple's Worksheet Generator</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Schoolbell&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
+    <div class="classroom">
         <header>
-            <h1>Kalia's Learning Adventure 🌟</h1>
-            <div class="progress-container">
-                <div class="progress-text">Week Progress:</div>
-                <div class="progress-bar">
-                    <div class="progress" id="weekProgress"></div>
-                </div>
-                <div class="progress-percentage" id="progressPercentage">0%</div>
+            <div class="header-banner">
+                <img src="images/apple.svg" alt="Apple" class="apple-icon">
+                <h1>Ms. Apple's Worksheet Generator</h1>
+                <img src="images/apple.svg" alt="Apple" class="apple-icon">
             </div>
+            <p class="tagline">Creating fun learning worksheets for little ones!</p>
         </header>
 
         <main>
-            <div class="days-container" id="daysContainer">
-                <!-- Days will be populated by JavaScript -->
+            <div class="control-panel">
+                <h2>Create a Worksheet</h2>
+                <div class="form-group">
+                    <label for="activity-type">Select Activity:</label>
+                    <select id="activity-type">
+                        <option value="letter-tracing">Letter Tracing</option>
+                        <option value="number-tracing">Number Tracing</option>
+                        <option value="letter-emoji-matching">Match Letter to Emoji</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic options based on selected activity -->
+                <div id="activity-options">
+                    <!-- Options will be inserted here based on selection -->
+                </div>
+
+                <!-- Activity Manager -->
+                <div class="activity-manager">
+                    <h3>Activities on Worksheet</h3>
+                    <div id="activity-list" class="activity-list">
+                        <!-- Activities will be listed here -->
+                        <div class="placeholder-message" id="activity-placeholder">
+                            No activities added yet
+                        </div>
+                    </div>
+                    <button id="add-activity-btn" class="add-activity-btn">+ Add Current Activity</button>
+                </div>
+
+                <button id="generate-btn" class="generate-button">Generate Worksheet</button>
+            </div>
+
+            <div class="preview-container">
+                <h2>Worksheet Preview</h2>
+                <div id="worksheet-preview" class="worksheet">
+                    <div class="worksheet-header">
+                        <div class="student-info">
+                            <label>Name: </label><span class="line"></span>
+                            <label>Date: </label><span class="line"></span>
+                        </div>
+                        <h2 id="worksheet-title">Fun Learning Activities</h2>
+                    </div>
+                    <div id="worksheet-content">
+                        <!-- Worksheet content will be generated here -->
+                        <div class="placeholder-message">
+                            Select activities and generate a worksheet to see preview
+                        </div>
+                    </div>
+                </div>
+                <div class="buttons">
+                    <button id="print-btn" class="print-button">Print Worksheet</button>
+                    <button id="new-btn" class="new-button">New Worksheet</button>
+                </div>
             </div>
         </main>
 
-        <section class="books-section">
-            <h2>📚 Recommended Books</h2>
-            <div class="books-container">
-                <div class="book-list">
-                    <h3>🇺🇸 English Books</h3>
-                    <ul id="englishBooks"></ul>
-                </div>
-                <div class="book-list">
-                    <h3>🇪🇸 Spanish Books</h3>
-                    <ul id="spanishBooks"></ul>
-                </div>
-            </div>
-        </section>
+        <footer>
+            <p>Made with ❤️ for young learners | © 2023 Ms. Apple's Classroom</p>
+        </footer>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html> 
