@@ -268,7 +268,7 @@ function generateCountAndCircle() {
     
     // Create sets of emojis
     const html = `
-        <p>Circle the group that has ${targetNumber} items</p>
+        <p>Circle the group(s) that has ${targetNumber} items</p>
         <div class="circle-items">
     `;
     
