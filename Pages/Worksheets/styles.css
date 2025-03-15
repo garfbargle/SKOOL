@@ -322,3 +322,38 @@ h1 {
         align-items: center;
     }
 }
+
+.dot-to-dot-container {
+    width: 100%;
+    height: 180px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dot-to-dot-svg {
+    width: 100%;
+    height: 100%;
+    max-width: 180px;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+    border: 2px solid var(--border-color);
+}
+
+.dot-circle {
+    fill: var(--secondary-color);
+    stroke: white;
+    stroke-width: 1;
+}
+
+.dot-number {
+    fill: white;
+    font-size: 8px;
+    font-weight: bold;
+    user-select: none;
+}
+
+.dot-group:hover .dot-circle {
+    fill: var(--primary-color);
+    r: 4;
+}

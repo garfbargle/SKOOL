@@ -437,16 +437,60 @@ function generateCompletePattern() {
 }
 
 function generateDotToDot() {
-    let dotsHtml = '<div class="dots-container">';
+    // Define a few simple shapes that can be formed
+    const shapes = [
+        { name: "star", points: [
+            {x: 50, y: 10}, {x: 20, y: 90}, {x: 90, y: 40}, 
+            {x: 10, y: 40}, {x: 80, y: 90}, {x: 50, y: 10}
+        ]},
+        { name: "house", points: [
+            {x: 10, y: 70}, {x: 50, y: 10}, {x: 90, y: 70}, 
+            {x: 90, y: 90}, {x: 10, y: 90}, {x: 10, y: 70}
+        ]},
+        { name: "heart", points: [
+            {x: 50, y: 20}, {x: 30, y: 10}, {x: 10, y: 30},
+            {x: 20, y: 60}, {x: 50, y: 90}, {x: 80, y: 60},
+            {x: 90, y: 30}, {x: 70, y: 10}, {x: 50, y: 20}
+        ]},
+        { name: "boat", points: [
+            {x: 20, y: 70}, {x: 40, y: 90}, {x: 80, y: 90}, 
+            {x: 90, y: 70}, {x: 70, y: 50}, {x: 70, y: 30}, 
+            {x: 30, y: 30}, {x: 10, y: 50}, {x: 20, y: 70}
+        ]}
+    ];
     
-    for (let i = 1; i <= 10; i++) {
-        dotsHtml += `<div class="dot">${i}</div>`;
+    // Select a random shape
+    const shape = shapes[getRandomInt(0, shapes.length - 1)];
+    
+    // Use all points but limit to 10 if needed
+    const usedPoints = shape.points.slice(0, Math.min(10, shape.points.length));
+    
+    // Create a container with dots positioned absolutely
+    let dotsHtml = `
+        <div class="dot-to-dot-container" style="position: relative; width: 100%; height: 200px; background-color: rgba(0, 0, 0, 0.03); border: 2px solid var(--border-color); border-radius: 8px;">
+    `;
+    
+    // Debug logging to HTML comment to check points
+    dotsHtml += `<!-- Using ${usedPoints.length} points -->`;
+    
+    // Add each dot as a positioned div
+    for (let i = 0; i < usedPoints.length; i++) {
+        const point = usedPoints[i];
+        dotsHtml += `
+            <div class="dot-point" style="position: absolute; left: ${point.x}%; top: ${point.y}%; width: 26px; height: 26px; 
+                      margin-left: -13px; margin-top: -13px; background-color: var(--secondary-color); 
+                      border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+                      color: white; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                      z-index: ${100 - i};">
+                ${i + 1}
+            </div>
+        `;
     }
     
-    dotsHtml += '</div>';
+    dotsHtml += `</div>`;
     
     return `
-        <p>Connect the dots in order from 1 to 10</p>
+        <p>Connect the dots in order from 1 to ${usedPoints.length} to discover the ${shape.name}!</p>
         ${dotsHtml}
     `;
 }
