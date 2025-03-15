@@ -145,7 +145,9 @@ select, input {
     background-color: white;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    padding: 25px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
 }
 
 .preview-container h2 {
@@ -158,7 +160,7 @@ select, input {
 
 .worksheet {
     background-color: var(--paper-color);
-    padding: 30px;
+    padding: 15px;
     border-radius: 5px;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
     background-image: linear-gradient(var(--paper-color) 1px, transparent 1px),
@@ -166,10 +168,12 @@ select, input {
     background-size: 20px 20px;
     background-position: -1px -1px;
     position: relative;
-    /* Set A4 aspect ratio */
-    width: var(--a4-width);
-    height: var(--a4-height);
-    max-height: 842px; /* Maximum height for A4 proportions */
+    /* Set A4 aspect ratio but constrain to container */
+    width: 90%;
+    max-width: 900px;
+    min-height: 400px;
+    height: auto;
+    max-height: 80vh; /* Limit height to 80% of viewport height */
     overflow-y: auto;
     margin: 0 auto;
 }
@@ -381,6 +385,8 @@ footer {
         width: 21cm; /* A4 width */
         height: 29.7cm; /* A4 height */
         overflow: visible;
+        max-width: none;
+        max-height: none;
     }
 }
 
@@ -450,8 +456,97 @@ footer {
     width: 100%;
     font-family: 'Comic Neue', cursive;
     transition: all 0.2s ease;
+    margin-bottom: 15px;
 }
 
 .add-activity-btn:hover {
     background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Print styles */
+@media print {
+    body {
+        background: none;
+        font-family: 'Comic Neue', cursive, Arial, sans-serif;
+    }
+    
+    .classroom {
+        padding: 0;
+        margin: 0;
+        background: none;
+    }
+    
+    .control-panel, 
+    .buttons,
+    header p.tagline,
+    footer,
+    .worksheet-header h2 {
+        display: none !important;
+    }
+    
+    .preview-container {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .preview-container h2 {
+        display: none;
+    }
+    
+    .worksheet {
+        box-shadow: none;
+        border: none;
+        margin: 0;
+        padding: 1cm;
+        width: 100%;
+        height: auto;
+    }
+    
+    /* Ensure activity titles and descriptions are visible */
+    .print-activity-title {
+        color: #000;
+        font-size: 16pt;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        page-break-after: avoid;
+        display: block !important;
+    }
+    
+    .print-activity-description {
+        color: #333;
+        font-size: 12pt;
+        margin-bottom: 15px;
+        page-break-after: avoid;
+        display: block !important;
+    }
+    
+    .activity-section {
+        page-break-inside: avoid;
+        margin-bottom: 20px;
+        display: block !important;
+    }
+    
+    .worksheet-instructions,
+    .print-visible {
+        display: block !important;
+    }
+    
+    /* Activity content styles for print */
+    .activity-content {
+        page-break-inside: avoid;
+        margin-bottom: 30px;
+    }
+    
+    /* Ensure proper spacing for activities */
+    .activity-section {
+        margin-bottom: 30px;
+    }
+    
+    /* Additional space at the end of the worksheet */
+    #worksheet-content::after {
+        content: "";
+        display: block;
+        height: 50px;
+    }
 } 

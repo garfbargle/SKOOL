@@ -324,10 +324,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const activitySection = document.createElement('div');
             activitySection.className = 'activity-section';
             
-            // Add activity title
+            // Add activity title with print-friendly class
             const activityTitle = document.createElement('h3');
+            activityTitle.className = 'print-activity-title';
             activityTitle.textContent = `Activity ${index + 1}: ${activity.title}`;
             activitySection.appendChild(activityTitle);
+            
+            // Add a brief description/instruction for the activity
+            const activityDescription = document.createElement('p');
+            activityDescription.className = 'print-activity-description';
+            activityDescription.textContent = activity.description;
+            activitySection.appendChild(activityDescription);
             
             // Generate activity content based on type
             let activityContent;
@@ -381,10 +388,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         const container = document.createElement('div');
+        container.className = 'activity-content';
         
         // Add instructions
         const instructions = document.createElement('div');
-        instructions.className = 'worksheet-instructions';
+        instructions.className = 'worksheet-instructions print-visible';
         instructions.innerHTML = '<p>Trace over each letter with your pencil. Follow the dotted outlines!</p>';
         container.appendChild(instructions);
         
@@ -438,10 +446,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         const container = document.createElement('div');
+        container.className = 'activity-content';
         
         // Add instructions
         const instructions = document.createElement('div');
-        instructions.className = 'worksheet-instructions';
+        instructions.className = 'worksheet-instructions print-visible';
         instructions.innerHTML = '<p>Trace over each number with your pencil. Follow the dotted outlines!</p>';
         container.appendChild(instructions);
         
@@ -499,10 +508,11 @@ document.addEventListener('DOMContentLoaded', () => {
         letters = letters.filter(letter => letterEmojiMap[letter]);
         
         const container = document.createElement('div');
+        container.className = 'activity-content';
         
         // Add instructions
         const instructions = document.createElement('div');
-        instructions.className = 'worksheet-instructions';
+        instructions.className = 'worksheet-instructions print-visible';
         instructions.innerHTML = '<p>Draw a line to match each letter with the correct picture:</p>';
         container.appendChild(instructions);
         
@@ -543,6 +553,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Print the worksheet
     function printWorksheet() {
+        // Make sure all print-specific elements are visible
+        document.querySelectorAll('.print-activity-title, .print-activity-description, .print-visible').forEach(el => {
+            el.style.display = 'block';
+        });
+        
         window.print();
     }
 
