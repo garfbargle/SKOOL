@@ -9,14 +9,18 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <div class="controls">
-                <button id="generate-btn" class="btn">🎲 new</button>
-                <button id="download-btn" class="btn">🖨️ print</button>
-            </div>
-        </header>
-        
         <main id="worksheet" class="a4-page">
+            <div class="sticker-controls">
+                <div class="sticker-wrapper">
+                    <button id="generate-btn" class="sticker-btn" title="Generate New Worksheet">🎲</button>
+                    <span class="sticker-label">New</span>
+                </div>
+                <div class="sticker-wrapper">
+                    <button id="download-btn" class="sticker-btn" title="Print Worksheet">🖨️</button>
+                    <span class="sticker-label">Print</span>
+                </div>
+            </div>
+            
             <div class="worksheet-header">
                 <h1>Fun Skool Workstuff</h1>
                 <div class="student-info">

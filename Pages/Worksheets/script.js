@@ -110,6 +110,12 @@ function generateWorksheet() {
 
 function downloadWorksheet() {
     const element = document.getElementById('worksheet');
+    const stickers = document.querySelector('.sticker-controls');
+    
+    // Temporarily hide stickers
+    if (stickers) {
+        stickers.style.display = 'none';
+    }
     
     // Use html2canvas to capture the worksheet as an image
     html2canvas(element, { scale: 2 }).then(canvas => {
@@ -124,6 +130,11 @@ function downloadWorksheet() {
         
         pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
         pdf.save('fun-worksheet.pdf');
+        
+        // Restore stickers
+        if (stickers) {
+            stickers.style.display = 'flex';
+        }
     });
 }
 
