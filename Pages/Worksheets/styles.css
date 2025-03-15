@@ -180,6 +180,50 @@ h1 {
     gap: 10px;
 }
 
+/* New matching activity styles */
+.matching-activity {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 20px;
+    background-color: rgba(0, 0, 0, 0.03);
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.matching-column {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 45%;
+}
+
+.matching-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 2rem;
+    height: 60px;
+}
+
+.left-item {
+    background-color: rgba(74, 107, 175, 0.1);
+    border: 2px solid var(--primary-color);
+}
+
+.right-item {
+    background-color: rgba(255, 121, 121, 0.1);
+    border: 2px solid var(--secondary-color);
+}
+
+/* Style for emoji groups in the number matching activity */
+.right-item:not(:empty) {
+    font-size: 1.25rem;
+    overflow: hidden;
+}
+
 .counting-item, .sorting-item {
     display: flex;
     flex-wrap: wrap;

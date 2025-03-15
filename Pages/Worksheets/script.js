@@ -196,20 +196,35 @@ function generateLetterMatching() {
         }
     }
     
-    let html = '<div class="matching">';
-    
+    // Get corresponding emojis
+    const emojis = [];
     letters.forEach(letter => {
         const emoji = LETTER_EMOJI_PAIRS[letter][getRandomInt(0, LETTER_EMOJI_PAIRS[letter].length - 1)];
-        html += `
-            <div class="matching-item">
-                <span class="big-emoji">${letter}</span>
-                <span>→</span>
-                <span class="big-emoji">${emoji}</span>
-            </div>
-        `;
+        emojis.push(emoji);
     });
     
-    html += '</div><p>Draw a line to match each letter with its picture</p>';
+    // Shuffle the emojis
+    const shuffledEmojis = [...emojis].sort(() => 0.5 - Math.random());
+    
+    let html = '<div class="matching-activity">';
+    
+    // Create left column (letters)
+    html += '<div class="matching-column">';
+    letters.forEach(letter => {
+        html += `<div class="matching-item left-item">${letter}</div>`;
+    });
+    html += '</div>';
+    
+    // Create right column (shuffled emojis)
+    html += '<div class="matching-column">';
+    shuffledEmojis.forEach(emoji => {
+        html += `<div class="matching-item right-item">${emoji}</div>`;
+    });
+    html += '</div>';
+    
+    html += '</div>';
+    
+    html += '<p>Draw a line to match each letter with its picture</p>';
     return html;
 }
 
@@ -288,8 +303,8 @@ function generateMatchNumberToObjects() {
     const numbers = [1, 2, 3, 4, 5];
     const selectedNumbers = numbers.sort(() => 0.5 - Math.random()).slice(0, 3);
     
-    let html = '<div class="matching">';
-    
+    // Create the emoji groups
+    const emojiGroups = [];
     selectedNumbers.forEach(number => {
         const category = getRandomCategory();
         const emojis = [];
@@ -299,16 +314,31 @@ function generateMatchNumberToObjects() {
             emojis.push(EMOJIS[category][randomIndex]);
         }
         
-        html += `
-            <div class="matching-item">
-                <span class="big-emoji">${number}</span>
-                <span>→</span>
-                <span>${emojis.join('')}</span>
-            </div>
-        `;
+        emojiGroups.push(emojis.join(''));
     });
     
-    html += '</div><p>Match each number with the correct number of objects</p>';
+    // Shuffle the emoji groups
+    const shuffledEmojiGroups = [...emojiGroups].sort(() => 0.5 - Math.random());
+    
+    let html = '<div class="matching-activity">';
+    
+    // Create left column (numbers)
+    html += '<div class="matching-column">';
+    selectedNumbers.forEach(number => {
+        html += `<div class="matching-item left-item">${number}</div>`;
+    });
+    html += '</div>';
+    
+    // Create right column (shuffled emoji groups)
+    html += '<div class="matching-column">';
+    shuffledEmojiGroups.forEach(group => {
+        html += `<div class="matching-item right-item emoji-group">${group}</div>`;
+    });
+    html += '</div>';
+    
+    html += '</div>';
+    
+    html += '<p>Match each number with the correct number of objects</p>';
     return html;
 }
 
