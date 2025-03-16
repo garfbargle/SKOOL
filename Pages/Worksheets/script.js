@@ -42,6 +42,18 @@ const ACTIVITIES = {
     }
 };
 
+// Fun adjectives and emojis for worksheet header
+const FUN_ADJECTIVES = [
+    'Amazing', 'Awesome', 'Brilliant', 'Cool', 'Exciting', 
+    'Fantastic', 'Great', 'Happy', 'Incredible', 'Jolly', 
+    'Magical', 'Marvelous', 'Phenomenal', 'Super', 'Wonderful'
+];
+
+const FUN_EMOJIS = [
+    '🌟', '🎉', '🚀', '🦄', '🌈', '🎨', '🧩', '🔍', '🧠',
+    '✨', '🤩', '🎯', '🏆', '🎊', '🤓', '👍', '🌻', '🦋'
+];
+
 // Emojis by category for activities
 const EMOJIS = {
     animals: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆', '🦉'],
@@ -88,7 +100,10 @@ const generateBtn = document.getElementById('generate-btn');
 const downloadBtn = document.getElementById('download-btn');
 
 // Event Listeners
-document.addEventListener('DOMContentLoaded', generateWorksheet);
+document.addEventListener('DOMContentLoaded', () => {
+    updateWorksheetHeader();
+    generateWorksheet();
+});
 generateBtn.addEventListener('click', generateWorksheet);
 downloadBtn.addEventListener('click', downloadWorksheet);
 
@@ -96,6 +111,9 @@ downloadBtn.addEventListener('click', downloadWorksheet);
 function generateWorksheet() {
     // Clear previous worksheet
     worksheetContainer.innerHTML = '';
+    
+    // Update the header with random emoji and adjective
+    updateWorksheetHeader();
     
     // Select 4-6 random activities
     const numActivities = getRandomInt(4, 6);
@@ -136,6 +154,17 @@ function downloadWorksheet() {
             stickers.style.display = 'flex';
         }
     });
+}
+
+// Function to update the worksheet header with random emoji and adjective
+function updateWorksheetHeader() {
+    const randomEmoji = FUN_EMOJIS[getRandomInt(0, FUN_EMOJIS.length - 1)];
+    const randomAdjective = FUN_ADJECTIVES[getRandomInt(0, FUN_ADJECTIVES.length - 1)];
+    
+    const headerTitle = document.querySelector('.worksheet-header h1');
+    if (headerTitle) {
+        headerTitle.innerHTML = `${randomEmoji} ${randomAdjective} Schoolwork ${randomEmoji}`;
+    }
 }
 
 // Helper Functions
