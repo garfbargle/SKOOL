@@ -4,7 +4,8 @@
   "description": "A standards-aligned curriculum studio for teachers and parents.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && npm run validate && vite build",
+    "build": "npm run spine && tsc --noEmit && npm run validate && vite build",
+    "spine": "node --experimental-strip-types scripts/build-spine.ts",
     "build:fast": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

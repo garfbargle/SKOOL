@@ -2,16 +2,20 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   addWorkPage,
+  allSavedImages,
   deleteWorkPage,
   pagesForLearner,
   processUpload,
   uid,
+  type LessonRecord,
+  type SavedImage,
   type WorkPage,
 } from '../lib/db'
+import { useBlobUrl } from '../lib/useBlobUrl'
 import { useLearners, usePrefs, useToasts } from '../lib/store'
 import { search, warmIndex, type SearchEntry } from '../lib/search'
 import { Badge, Button, EmptyState, Modal, Segmented, SUBJECT_COLOUR } from '../ui/primitives'
-import { IconFolder, IconPrint, IconSearch, IconTrash, IconUpload } from '../ui/icons'
+import { IconFolder, IconPrint, IconSearch, IconStar, IconTrash, IconUpload } from '../ui/icons'
 import { GRADE_BY_ID, SUBJECT_BY_ID, SUBJECTS } from '../curriculum/taxonomy'
 import type { GradeId, SubjectId } from '../curriculum/types'
 
@@ -25,8 +29,10 @@ import type { GradeId, SubjectId } from '../curriculum/types'
 export default function Workbook() {
   const activeLearnerId = usePrefs((s) => s.activeLearnerId)
   const learners = useLearners((s) => s.learners)
+  const records = useLearners((s) => s.records)
   const push = useToasts((s) => s.push)
 
+  const [view, setView] = useState<'stickers' | 'work'>('stickers')
   const [pages, setPages] = useState<WorkPage[]>([])
   const [filter, setFilter] = useState<SubjectId | 'all'>('all')
   const [uploading, setUploading] = useState(false)
@@ -97,8 +103,7 @@ export default function Workbook() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Workbook</h1>
           <p className="muted mt-1 text-[14px]">
-            {active.avatar} {active.name} · {pages.length} page{pages.length === 1 ? '' : 's'} of
-            finished work, stored on this device
+            {active.avatar} {active.name} · everything kept on this device
           </p>
         </div>
 
@@ -115,23 +120,40 @@ export default function Workbook() {
               e.target.value = ''
             }}
           />
-          <Button
-            variant="primary"
-            icon={<IconUpload size={15} />}
-            onClick={() => fileRef.current?.click()}
-            disabled={uploading}
-          >
-            {uploading ? 'Processing…' : 'Add finished work'}
-          </Button>
-          {pages.length > 0 && (
-            <Button icon={<IconPrint size={15} />} onClick={() => window.print()}>
-              Print portfolio
-            </Button>
+          {view === 'work' && (
+            <>
+              <Button
+                variant="primary"
+                icon={<IconUpload size={15} />}
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? 'Processing…' : 'Add finished work'}
+              </Button>
+              {pages.length > 0 && (
+                <Button icon={<IconPrint size={15} />} onClick={() => window.print()}>
+                  Print portfolio
+                </Button>
+              )}
+            </>
           )}
         </div>
       </div>
 
-      {pages.length > 0 && (
+      <div className="no-print mb-5">
+        <Segmented
+          value={view}
+          onChange={setView}
+          options={[
+            { value: 'stickers' as const, label: 'Stickers' },
+            { value: 'work' as const, label: `Finished work (${pages.length})` },
+          ]}
+        />
+      </div>
+
+      {view === 'stickers' && <Stickers records={records} />}
+
+      {view === 'work' && pages.length > 0 && (
         <div className="no-print mb-5">
           <Segmented
             value={filter}
@@ -147,7 +169,8 @@ export default function Workbook() {
         </div>
       )}
 
-      {filtered.length === 0 ? (
+      {view === 'work' &&
+        (filtered.length === 0 ? (
         <div className="surface">
           <EmptyState
             icon={<IconFolder size={20} />}
@@ -189,7 +212,7 @@ export default function Workbook() {
             ))}
           </div>
         </div>
-      )}
+        ))}
 
       <AttachPicker
         file={picker}
@@ -199,6 +222,121 @@ export default function Workbook() {
 
       <Lightbox page={lightbox} onClose={() => setLightbox(null)} />
     </div>
+  )
+}
+
+/* -------------------------------------------------------------- stickers */
+
+interface Sticker {
+  image: SavedImage
+  lessonTitle: string
+  subjectId: SubjectId
+  gradeId: string
+  earnedAt: number
+}
+
+/**
+ * The trophy case.
+ *
+ * Nothing new is stored to build this — a sticker is simply the worksheet art
+ * already generated for a lesson the learner has since finished. Art for a
+ * lesson they have not done yet stays hidden, which is what makes finishing one
+ * feel like it produced something.
+ */
+function Stickers({ records }: { records: Record<string, LessonRecord> }) {
+  const [stickers, setStickers] = useState<Sticker[] | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void allSavedImages().then((images) => {
+      if (cancelled) return
+
+      const earned = new Map<string, Sticker>()
+      for (const image of images) {
+        const record = records[image.lessonId]
+        if (record?.status !== 'done') continue
+        // One sticker per lesson: the first image generated for it.
+        const existing = earned.get(image.lessonId)
+        if (existing && existing.image.createdAt <= image.createdAt) continue
+        earned.set(image.lessonId, {
+          image,
+          lessonTitle: record.lessonTitle,
+          subjectId: record.subjectId as SubjectId,
+          gradeId: record.gradeId,
+          earnedAt: record.completedAt ?? record.updatedAt,
+        })
+      }
+
+      setStickers([...earned.values()].sort((a, b) => b.earnedAt - a.earnedAt))
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [records])
+
+  const doneCount = Object.values(records).filter((r) => r.status === 'done').length
+
+  if (stickers === null) return null
+
+  if (stickers.length === 0) {
+    return (
+      <div className="surface">
+        <EmptyState
+          icon={<IconStar size={20} />}
+          title={doneCount === 0 ? 'No stickers yet' : 'Generate some worksheet art'}
+          body={
+            doneCount === 0
+              ? 'Finish a lesson and the picture from its worksheet becomes a sticker you keep here.'
+              : `${doneCount} lesson${doneCount === 1 ? '' : 's'} finished. Generate the worksheet art for a lesson and its picture turns into a sticker.`
+          }
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      {stickers.map((sticker) => (
+        <StickerCard key={sticker.image.id} sticker={sticker} />
+      ))}
+    </div>
+  )
+}
+
+function StickerCard({ sticker }: { sticker: Sticker }) {
+  const url = useBlobUrl(sticker.image.image)
+  const colour = SUBJECT_COLOUR[sticker.subjectId]
+
+  return (
+    <Link
+      to={`/c/${sticker.gradeId}/${sticker.subjectId}/${sticker.image.lessonId}`}
+      className="surface overflow-hidden focus-ring hover:shadow-md transition-shadow"
+    >
+      <span
+        className="block aspect-square p-2.5"
+        style={{ background: `color-mix(in srgb, ${colour} 12%, var(--surface))` }}
+      >
+        {url && (
+          <img
+            src={url}
+            alt={`Sticker for ${sticker.lessonTitle}`}
+            className="w-full h-full object-contain"
+          />
+        )}
+      </span>
+      <span className="block p-2.5 border-t">
+        <span className="block text-[12px] font-medium leading-snug line-clamp-2">
+          {sticker.lessonTitle}
+        </span>
+        <span className="flex items-center gap-1.5 mt-1">
+          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: colour }} />
+          <span className="text-[10.5px] faint">
+            {SUBJECT_BY_ID[sticker.subjectId]?.short} ·{' '}
+            {new Date(sticker.earnedAt).toLocaleDateString()}
+          </span>
+        </span>
+      </span>
+    </Link>
   )
 }
 
@@ -391,20 +529,3 @@ function AttachPicker({
   )
 }
 
-/* ------------------------------------------------------------------ hook */
-
-function useBlobUrl(blob?: Blob | null) {
-  const [url, setUrl] = useState<string | null>(null)
-  useEffect(() => {
-    if (!blob) {
-      setUrl(null)
-      return
-    }
-    const u = URL.createObjectURL(blob)
-    setUrl(u)
-    return () => URL.revokeObjectURL(u)
-  }, [blob])
-  return url
-}
-
-export { useBlobUrl }

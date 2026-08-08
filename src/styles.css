@@ -193,6 +193,111 @@ body {
   }
 }
 
+/* ---------------------------------------------------------- subject bubble
+ *
+ * The home screen's main target. It has to feel pressable at a glance and
+ * survive being aimed at by someone with poor fine motor control, so the whole
+ * thing moves as one object rather than lighting up a border.
+ */
+
+.bubble .bubble-disc {
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 0.22s ease;
+}
+
+.bubble:hover .bubble-disc {
+  transform: scale(1.07);
+  background: color-mix(in srgb, var(--sc) 32%, var(--surface));
+}
+
+.bubble:active .bubble-disc {
+  transform: scale(0.97);
+}
+
+/* ------------------------------------------------------------- lesson path
+ *
+ * `--sway` is how far a node may wander from the centre line. It shrinks on
+ * narrow screens so a long lesson title never gets pushed off the edge.
+ */
+
+.lesson-path {
+  --sway: 4.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .lesson-path {
+    --sway: 2.5rem;
+  }
+}
+
+.path-node {
+  transition:
+    transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.2s ease;
+}
+
+.path-link:hover .path-node {
+  transform: translateY(-3px) scale(1.05);
+}
+
+.path-link:active .path-node {
+  transform: translateY(0) scale(0.98);
+}
+
+.path-node-locked {
+  background: var(--surface-3);
+  color: var(--text-3);
+  border: 2px dashed var(--border-strong);
+}
+
+/* The one node you are meant to press. A slow breath, not a blink. */
+.path-node-current {
+  animation: node-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes node-pulse {
+  0%,
+  100% {
+    box-shadow: 0 10px 24px -8px var(--sc), 0 0 0 0 color-mix(in srgb, var(--sc) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 10px 24px -8px var(--sc), 0 0 0 12px color-mix(in srgb, var(--sc) 0%, transparent);
+  }
+}
+
+/* ---------------------------------------------------------------- confetti */
+
+.confetti {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 70;
+}
+
+.confetti-bit {
+  position: absolute;
+  top: -6%;
+  animation-name: confetti-fall;
+  animation-timing-function: cubic-bezier(0.3, 0.5, 0.7, 1);
+  animation-fill-mode: forwards;
+}
+
+@keyframes confetti-fall {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(var(--drift), 108vh, 0) rotate(var(--spin));
+  }
+}
+
 .focus-ring {
   outline: 2px solid transparent;
   outline-offset: 2px;

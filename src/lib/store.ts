@@ -34,7 +34,10 @@ interface PrefsState {
   imageQuality: Quality
   /** How many images to generate at once during a batch run. */
   concurrency: number
+  /** The home-screen explainer is onboarding, so it retires after one read. */
+  seenIntro: boolean
   setTheme: (t: ThemeMode) => void
+  setSeenIntro: (v: boolean) => void
   setPromptTarget: (t: ModelTarget) => void
   setStyleOverride: (s: StylePresetId | null) => void
   setActiveLearner: (id: string | null) => void
@@ -59,10 +62,12 @@ export const usePrefs = create<PrefsState>()(
       imageResolution: '1K',
       imageQuality: 'medium',
       concurrency: 2,
+      seenIntro: false,
       setTheme: (theme) => {
         set({ theme })
         applyTheme(theme)
       },
+      setSeenIntro: (seenIntro) => set({ seenIntro }),
       setPromptTarget: (promptTarget) => set({ promptTarget }),
       setStyleOverride: (styleOverride) => set({ styleOverride }),
       setActiveLearner: (activeLearnerId) => set({ activeLearnerId }),

@@ -265,6 +265,25 @@ export const IconChevronDown = (p: P) => (
   </Svg>
 )
 
+export const IconLock = (p: P) => (
+  <Svg {...p}>
+    <rect x="4.5" y="10.5" width="15" height="10.5" rx="2" />
+    <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+  </Svg>
+)
+
+export const IconFlame = (p: P) => (
+  <Svg {...p}>
+    <path d="M12 2.5s5.5 4.2 5.5 9.2a5.5 5.5 0 0 1-11 0c0-1.9 1-3.6 1.9-4.7.3 1.2 1.1 2 2 2 1.6 0 2.1-2.3 1.6-6.5z" />
+  </Svg>
+)
+
+export const IconStar = (p: P) => (
+  <Svg {...p}>
+    <path d="M12 3.5l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-3-5.3 3 1.1-6L3.4 9.9l6-.8z" />
+  </Svg>
+)
+
 export const SUBJECT_ICONS = {
   calculator: IconCalculator,
   book: IconBook,

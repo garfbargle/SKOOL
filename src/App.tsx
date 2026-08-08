@@ -30,11 +30,20 @@ const Workbook = lazy(() => import('./pages/Workbook'))
 const Settings = lazy(() => import('./pages/Settings'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
+/**
+ * Two groups, because there are two audiences. The first three are where a
+ * learner's day happens; the planner and the settings are the studio behind it,
+ * kept present but visibly quieter so the default chrome reads as the kid's app
+ * rather than an admin console.
+ */
 const NAV = [
   { to: '/', label: 'Today', icon: IconHome, end: true },
-  { to: '/browse', label: 'Curriculum', icon: IconGrid },
-  { to: '/planner', label: 'Planner', icon: IconCalendar },
+  { to: '/browse', label: 'Subjects', icon: IconGrid },
   { to: '/workbook', label: 'Workbook', icon: IconFolder },
+]
+
+const PARENT_NAV = [
+  { to: '/planner', label: 'Planner', icon: IconCalendar },
   { to: '/settings', label: 'Settings', icon: IconSettings },
 ]
 
@@ -112,7 +121,7 @@ export default function App() {
           </button>
         </div>
 
-        <nav className="p-3 flex flex-col gap-0.5">
+        <nav className="p-3 flex flex-col gap-1">
           {NAV.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
@@ -120,14 +129,35 @@ export default function App() {
               end={end}
               className={({ isActive }) =>
                 clsx(
-                  'flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13.5px] font-medium transition-colors focus-ring',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14.5px] font-semibold transition-colors focus-ring',
                   isActive
-                    ? 'bg-blue-500/10 text-blue-700 dark:text-blue-300'
+                    ? 'bg-blue-500/12 text-blue-700 dark:text-blue-300'
                     : 'text-[var(--text-2)] hover:bg-[var(--surface-3)] hover:text-[var(--text)]',
                 )
               }
             >
-              <Icon size={17} />
+              <Icon size={19} />
+              {label}
+            </NavLink>
+          ))}
+
+          <p className="text-[10px] font-semibold uppercase tracking-[0.09em] faint px-3 pt-5 pb-1.5">
+            For grown-ups
+          </p>
+          {PARENT_NAV.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                clsx(
+                  'flex items-center gap-3 px-3 py-1.5 rounded-lg text-[13px] transition-colors focus-ring',
+                  isActive
+                    ? 'text-blue-700 dark:text-blue-300 font-medium'
+                    : 'faint hover:bg-[var(--surface-3)] hover:text-[var(--text-2)]',
+                )
+              }
+            >
+              <Icon size={15} />
               {label}
             </NavLink>
           ))}

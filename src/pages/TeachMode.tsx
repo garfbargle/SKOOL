@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import clsx from 'clsx'
 import { useLesson } from '../lib/useCourse'
 import { SUBJECT_BY_ID } from '../curriculum/taxonomy'
 import { Button, EmptyState, Spinner, SUBJECT_COLOUR } from '../ui/primitives'
-import { IconCheck, IconClose, IconLightbulb, IconTarget } from '../ui/icons'
+import { Confetti } from '../ui/Confetti'
+import { IconCheck, IconClose, IconLightbulb, IconStar, IconTarget } from '../ui/icons'
+import { useBlobUrl } from '../lib/useBlobUrl'
+import { nextTeachable } from '../lib/progress'
+import { imagesForLesson, type SavedImage } from '../lib/db'
 import { useLearners, usePrefs } from '../lib/store'
 import type { BeatPhase, SubjectId } from '../curriculum/types'
 
@@ -33,6 +37,7 @@ export default function TeachMode() {
   const [step, setStep] = useState(0)
   const [elapsed, setElapsed] = useState(0)
   const [running, setRunning] = useState(true)
+  const [celebrating, setCelebrating] = useState(false)
   const startedRef = useRef(false)
 
   const beats = useMemo(() => lesson?.script ?? [], [lesson])
@@ -45,11 +50,14 @@ export default function TeachMode() {
     return () => clearInterval(t)
   }, [running])
 
-  // Mark the lesson in-progress the first time the presenter is opened.
+  // Mark the lesson in-progress the first time the presenter is opened —
+  // unless it is already finished, because re-teaching something you have
+  // done should not quietly take the tick back off the trail.
   useEffect(() => {
     const l = lessonRef.current
     if (!l || !activeLearnerId || startedRef.current) return
     startedRef.current = true
+    if (useLearners.getState().records[l.id]?.status === 'done') return
     void setLessonStatus(
       {
         learnerId: activeLearnerId,
@@ -66,6 +74,9 @@ export default function TeachMode() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // The celebration has its own choices to make; letting Space fall through
+      // to the beat navigation would scrub it away before it can be read.
+      if (celebrating) return
       if (e.key === 'Escape') exit()
       if (e.key === 'ArrowRight' || e.key === ' ') {
         e.preventDefault()
@@ -79,7 +90,7 @@ export default function TeachMode() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [beats.length])
+  }, [beats.length, celebrating])
 
   if (loading) return <Spinner label="Loading lesson…" />
   if (missing || !lesson) {
@@ -117,7 +128,25 @@ export default function TeachMode() {
         { status: 'done', minutesSpent: Math.round(elapsed / 60) },
       )
     }
-    exit()
+    setRunning(false)
+    setCelebrating(true)
+  }
+
+  if (celebrating) {
+    // Not `useLesson`'s `next`, which happily returns an outline: the only
+    // useful next step is one that has a script to teach.
+    const upcoming = nextTeachable(lesson.gradeId, lesson.subjectId, lesson.id)
+    return (
+      <Celebration
+        lessonId={lesson.id}
+        lessonTitle={lesson.title}
+        colour={colour}
+        minutes={Math.max(1, Math.round(elapsed / 60))}
+        backTo={`/c/${gradeId}/${subjectId}`}
+        nextTo={upcoming ? `/c/${gradeId}/${subjectId}/${upcoming.id}` : null}
+        nextTitle={upcoming?.title ?? null}
+      />
+    )
   }
 
   return (
@@ -314,6 +343,108 @@ export default function TeachMode() {
           </Button>
         )}
       </footer>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------ celebration */
+
+/**
+ * The payoff. Finishing a lesson used to drop you back on the plan you had
+ * just taught, with nothing to show for it — so this closes the loop: the
+ * worksheet art you generated for this lesson comes back as the sticker you
+ * earned, and it stays in the workbook.
+ */
+function Celebration({
+  lessonId,
+  lessonTitle,
+  colour,
+  minutes,
+  backTo,
+  nextTo,
+  nextTitle,
+}: {
+  lessonId: string
+  lessonTitle: string
+  colour: string
+  minutes: number
+  backTo: string
+  nextTo: string | null
+  nextTitle: string | null
+}) {
+  const [sticker, setSticker] = useState<SavedImage | null>(null)
+  const url = useBlobUrl(sticker?.image)
+
+  useEffect(() => {
+    let cancelled = false
+    void imagesForLesson(lessonId).then((images) => {
+      if (cancelled || !images.length) return
+      // Oldest first, so the sticker for a lesson is stable rather than
+      // changing every time another image is generated for it.
+      setSticker([...images].sort((a, b) => a.createdAt - b.createdAt)[0])
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [lessonId])
+
+  return (
+    <div className="h-full overflow-y-auto scroll-thin bg-[var(--surface-2)] dragless">
+      <Confetti />
+
+      <div className="max-w-lg mx-auto px-6 py-14 text-center animate-fade-up">
+        <span
+          className="mx-auto mb-6 w-20 h-20 rounded-full grid place-items-center text-white"
+          style={{ background: colour, boxShadow: `0 16px 40px -12px ${colour}` }}
+        >
+          <IconCheck size={40} strokeWidth={2.5} />
+        </span>
+
+        <h1 className="text-[34px] font-semibold tracking-[-0.03em] leading-tight mb-2">
+          Lesson complete!
+        </h1>
+        <p className="text-[15px] muted mb-8">
+          {lessonTitle} · {minutes} minute{minutes === 1 ? '' : 's'}
+        </p>
+
+        {url ? (
+          <figure className="mb-8">
+            <div
+              className="rounded-2xl overflow-hidden bg-white p-3 mx-auto max-w-xs"
+              style={{ boxShadow: `0 18px 44px -20px ${colour}` }}
+            >
+              <img src={url} alt={`Sticker earned for ${lessonTitle}`} className="w-full rounded-lg" />
+            </div>
+            <figcaption className="flex items-center justify-center gap-1.5 text-[12.5px] faint mt-3">
+              <IconStar size={13} style={{ color: colour }} />
+              Sticker earned — it is in the workbook
+            </figcaption>
+          </figure>
+        ) : (
+          <p className="text-[13px] faint mb-8 leading-relaxed max-w-xs mx-auto">
+            Generate this lesson's worksheet art and it becomes a sticker in the workbook.
+          </p>
+        )}
+
+        <div className="flex flex-col gap-2.5">
+          {nextTo && (
+            <Link to={nextTo}>
+              <Button
+                size="lg"
+                className="w-full text-white border-0 shadow-md"
+                style={{ background: colour }}
+              >
+                Next: {nextTitle}
+              </Button>
+            </Link>
+          )}
+          <Link to={backTo}>
+            <Button size="lg" className="w-full">
+              Back to the trail
+            </Button>
+          </Link>
+        </div>
+      </div>
     </div>
   )
 }
