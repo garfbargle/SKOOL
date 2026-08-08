@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "skool",
+  "compatibility_date": "2026-08-01",
+
+  // Deployed as Cloudflare Pages, because the `skool` project already owns
+  // skool.c0di.com (and school.c0di.com). Deploy with:
+  //     npm run deploy
+  // which runs `wrangler pages deploy dist --project-name skool`.
+  "pages_build_output_dir": "./dist"
+}
