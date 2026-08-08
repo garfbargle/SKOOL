@@ -6,8 +6,10 @@ import { useLearners, usePrefs, useToasts } from '../lib/store'
 import { search, warmIndex, type SearchEntry } from '../lib/search'
 import { Badge, Button, EmptyState, Modal, SUBJECT_COLOUR } from '../ui/primitives'
 import { IconCalendar, IconChevron, IconPrint, IconSearch, IconTrash } from '../ui/icons'
+import { GenerateAllButton, useMissingCount } from '../ui/GenerateRun'
 import { GRADE_BY_ID, SUBJECT_BY_ID } from '../curriculum/taxonomy'
-import type { GradeId, SubjectId } from '../curriculum/types'
+import { findLesson, loadCourse } from '../curriculum/registry'
+import type { GradeId, Lesson, SubjectId } from '../curriculum/types'
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -54,6 +56,44 @@ export default function Planner() {
       }),
     [weekStart],
   )
+
+  /**
+   * The lessons scheduled in the week on screen, resolved from their plan
+   * entries. This is what "prep this week" actually operates on — courses are
+   * lazy chunks, so every one referenced by the week has to be loaded first.
+   */
+  const [weekLessons, setWeekLessons] = useState<Lesson[]>([])
+
+  useEffect(() => {
+    const isos = new Set(days.map(isoDate))
+    const inWeek = entries.filter((e) => isos.has(e.date))
+    let cancelled = false
+
+    void Promise.all(
+      inWeek.map(async (e) => {
+        const course = await loadCourse(e.gradeId as GradeId, e.subjectId as SubjectId)
+        return course ? (findLesson(course, e.lessonId)?.lesson ?? null) : null
+      }),
+    ).then((found) => {
+      if (cancelled) return
+      const seen = new Set<string>()
+      const unique: Lesson[] = []
+      for (const lesson of found) {
+        // The same lesson can be scheduled on two days; generate its images once.
+        if (lesson && !seen.has(lesson.id)) {
+          seen.add(lesson.id)
+          unique.push(lesson)
+        }
+      }
+      setWeekLessons(unique)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [entries, days])
+
+  const missingImages = useMissingCount(weekLessons)
 
   const byDate = useMemo(() => {
     const map = new Map<string, PlanEntry[]>()
@@ -136,11 +176,39 @@ export default function Planner() {
             Next
             <IconChevron size={14} />
           </Button>
-          <Button variant="primary" icon={<IconPrint size={15} />} onClick={() => window.print()}>
+          <Button icon={<IconPrint size={15} />} onClick={() => window.print()}>
             Print
           </Button>
         </div>
       </div>
+
+      {/* One press turns a planned week into a printable one. */}
+      {weekLessons.length > 0 && (
+        <div className="no-print surface p-4 mb-5 flex flex-wrap items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-[13.5px] font-medium">
+              {missingImages == null
+                ? 'Checking this week’s worksheets…'
+                : missingImages === 0
+                  ? 'Every worksheet this week is ready to print.'
+                  : `${missingImages} worksheet image${missingImages === 1 ? '' : 's'} still to generate.`}
+            </p>
+            <p className="text-[12px] faint mt-0.5">
+              {weekLessons.length} lesson{weekLessons.length === 1 ? '' : 's'} planned ·{' '}
+              {missingImages === 0
+                ? 'nothing left to do before Monday.'
+                : 'generated once and kept on this device.'}
+            </p>
+          </div>
+          {missingImages != null && missingImages > 0 && (
+            <GenerateAllButton
+              collect={async () => weekLessons}
+              scope="this week’s plan"
+              label={`Prepare the week — ${missingImages} image${missingImages === 1 ? '' : 's'}`}
+            />
+          )}
+        </div>
+      )}
 
       <div className="print-root grid md:grid-cols-2 xl:grid-cols-4 gap-3">
         {days.map((day) => {

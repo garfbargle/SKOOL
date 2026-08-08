@@ -114,10 +114,33 @@ standard's actual text on hover.
 
 ## Image generation
 
-Optional. Paste an OpenAI key in Settings and the studio can fill worksheet
-slots directly. The key lives in this device's local storage and is sent only
-to `api.openai.com` — the site is static files on a CDN with no backend, so
-there is nowhere else for it to go.
+Optional. Paste an [OpenRouter](https://openrouter.ai/keys) key in Settings and
+the studio fills worksheet slots directly. One key reaches every image model —
+GPT Image, Nano Banana, Flux, Recraft, Seedream — and the picker shows the price
+of a single image next to each one, read live from OpenRouter, so the thirty-fold
+spread between the cheapest usable model and the most accurate one is a visible
+choice rather than a surprise on the invoice.
+
+The key lives in this device's local storage and is sent only to `openrouter.ai`
+— the site is static files on a CDN with no backend, so there is nowhere else
+for it to go. An OpenAI key still works as a fallback if you already had one
+here; that route is fixed to `gpt-image-1` and quotes no prices.
+
+**One button.** The worksheet studio, the lesson page and the planner each carry
+a single control that works out every image still missing in scope, prices the
+run, and generates the lot. The planner's version covers a whole week of
+lessons. Slots that already have an image are skipped, so pressing it twice
+costs nothing.
+
+Runs are safe to interrupt. Each finished image is written to IndexedDB the
+moment it arrives rather than at the end, so closing the tab mid-run loses only
+what was in flight, and starting again resumes from there. Generated images
+persist across refreshes and the actual amount billed is totalled in Settings.
+
+Aspect ratios the model refuses (worksheets need `3:1` and `4:1` strips for rows
+of countable objects) are requested at the nearest supported ratio and centre-
+cropped to the exact target — which is safe because every prompt already demands
+generous empty margin on all four sides.
 
 Without a key everything still works: copy any single prompt, or all of a
 worksheet's prompts as one numbered brief, into whatever generator you prefer.

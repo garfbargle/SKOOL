@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { ModelTarget, StylePresetId } from '../curriculum/types'
+import { DEFAULT_MODEL, type Quality, type Resolution } from './openrouter'
 import {
   listLearners,
   recordsForLearner,
@@ -24,13 +25,25 @@ interface PrefsState {
   /** Overrides the worksheet's own style when set. */
   styleOverride: StylePresetId | null
   activeLearnerId: string | null
-  /** Optional key for in-app image generation. Never leaves the device. */
+  /** Optional keys for in-app image generation. Never leave the device. */
+  openrouterKey: string
   openaiKey: string
+  /** OpenRouter model id used for generation. */
+  imageModel: string
+  imageResolution: Resolution
+  imageQuality: Quality
+  /** How many images to generate at once during a batch run. */
+  concurrency: number
   setTheme: (t: ThemeMode) => void
   setPromptTarget: (t: ModelTarget) => void
   setStyleOverride: (s: StylePresetId | null) => void
   setActiveLearner: (id: string | null) => void
+  setOpenrouterKey: (k: string) => void
   setOpenaiKey: (k: string) => void
+  setImageModel: (m: string) => void
+  setImageResolution: (r: Resolution) => void
+  setImageQuality: (q: Quality) => void
+  setConcurrency: (n: number) => void
 }
 
 export const usePrefs = create<PrefsState>()(
@@ -40,7 +53,12 @@ export const usePrefs = create<PrefsState>()(
       promptTarget: 'universal',
       styleOverride: null,
       activeLearnerId: null,
+      openrouterKey: '',
       openaiKey: '',
+      imageModel: DEFAULT_MODEL,
+      imageResolution: '1K',
+      imageQuality: 'medium',
+      concurrency: 2,
       setTheme: (theme) => {
         set({ theme })
         applyTheme(theme)
@@ -48,11 +66,28 @@ export const usePrefs = create<PrefsState>()(
       setPromptTarget: (promptTarget) => set({ promptTarget }),
       setStyleOverride: (styleOverride) => set({ styleOverride }),
       setActiveLearner: (activeLearnerId) => set({ activeLearnerId }),
+      setOpenrouterKey: (openrouterKey) => set({ openrouterKey }),
       setOpenaiKey: (openaiKey) => set({ openaiKey }),
+      setImageModel: (imageModel) => set({ imageModel }),
+      setImageResolution: (imageResolution) => set({ imageResolution }),
+      setImageQuality: (imageQuality) => set({ imageQuality }),
+      setConcurrency: (concurrency) => set({ concurrency }),
     }),
-    { name: 'skool.prefs' },
+    { name: 'skool.prefs', version: 2 },
   ),
 )
+
+/**
+ * Which provider a generation will actually use. OpenRouter reaches every
+ * model including OpenAI's, so it wins whenever a key is present; the direct
+ * OpenAI path stays for people who already had a key here before.
+ */
+export function activeProvider(): 'openrouter' | 'openai' | null {
+  const { openrouterKey, openaiKey } = usePrefs.getState()
+  if (openrouterKey.trim()) return 'openrouter'
+  if (openaiKey.trim()) return 'openai'
+  return null
+}
 
 export function applyTheme(mode: ThemeMode) {
   const dark =

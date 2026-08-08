@@ -17,6 +17,7 @@ import { Spinner, Toaster } from './ui/primitives'
 import { useLearners, usePrefs } from './lib/store'
 import CommandPalette from './ui/CommandPalette'
 import LearnerSwitcher from './ui/LearnerSwitcher'
+import { GenerationDock } from './ui/GenerateRun'
 
 const Home = lazy(() => import('./pages/Home'))
 const Browse = lazy(() => import('./pages/Browse'))
@@ -73,6 +74,7 @@ export default function App() {
           </Routes>
         </Suspense>
         <Toaster />
+        <GenerationDock />
       </>
     )
   }
@@ -193,6 +195,7 @@ export default function App() {
       </div>
 
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      <GenerationDock />
       <Toaster />
     </div>
   )

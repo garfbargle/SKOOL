@@ -16,8 +16,9 @@ import {
   IconUsers,
 } from '../ui/icons'
 import { MASTERY_LABEL, useLearners, usePrefs } from '../lib/store'
+import { GenerateAllButton, useMissingCount } from '../ui/GenerateRun'
 import type { BeatPhase, GradeId, Lesson, SubjectId } from '../curriculum/types'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 const PHASE_LABEL: Record<BeatPhase, string> = {
   hook: 'Hook',
@@ -34,6 +35,10 @@ export default function LessonPage() {
   const activeLearnerId = usePrefs((s) => s.activeLearnerId)
   const { records, setLessonStatus } = useLearners()
   const [notesDraft, setNotesDraft] = useState<string | null>(null)
+
+  // Hooks must run unconditionally, so the list is empty until the lesson loads.
+  const scope = useMemo(() => (lesson ? [lesson] : []), [lesson])
+  const missingImages = useMissingCount(scope)
 
   if (loading) return <Spinner label="Loading lesson…" />
   if (missing || !lesson || !unit) {
@@ -111,6 +116,17 @@ export default function LessonPage() {
                 Worksheet &amp; {imageCount} image prompts
               </Button>
             </Link>
+          )}
+          {missingImages != null && missingImages > 0 && (
+            <GenerateAllButton
+              collect={async () => [lesson]}
+              scope="this lesson"
+              variant="secondary"
+              label={`Generate ${missingImages} image${missingImages === 1 ? '' : 's'}`}
+            />
+          )}
+          {imageCount > 0 && missingImages === 0 && (
+            <Badge tone="success">all {imageCount} images ready</Badge>
           )}
           <Button icon={<IconPrint size={15} />} onClick={() => window.print()}>
             Print plan

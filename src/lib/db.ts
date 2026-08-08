@@ -67,6 +67,11 @@ export interface SavedImage {
   prompt: string
   model: string
   createdAt: number
+  /** What actually got billed, as reported by the provider. */
+  costUsd?: number
+  /** Target ratio of the slot, kept so the studio can flag a mismatch. */
+  aspect?: string
+  provider?: 'openrouter' | 'openai' | 'uploaded'
 }
 
 export interface PlanEntry {
@@ -211,8 +216,30 @@ export async function imagesForLesson(lessonId: string) {
   return (await db()).getAllFromIndex('savedImages', 'byLesson', lessonId)
 }
 
+/**
+ * Which slots are already filled, across many lessons at once. The batch
+ * planner needs this to work out what is actually missing before it spends
+ * anything, and doing it per lesson would mean a transaction per lesson.
+ */
+export async function filledSlots(lessonIds: string[]): Promise<Set<string>> {
+  const d = await db()
+  const filled = new Set<string>()
+  await Promise.all(
+    [...new Set(lessonIds)].map(async (lessonId) => {
+      const list = await d.getAllFromIndex('savedImages', 'byLesson', lessonId)
+      for (const img of list) filled.add(`${lessonId}:${img.specId}`)
+    }),
+  )
+  return filled
+}
+
 export async function deleteSavedImage(id: string) {
   await (await db()).delete('savedImages', id)
+}
+
+/** Every generated image, for the spend total on the settings screen. */
+export async function allSavedImages() {
+  return (await db()).getAll('savedImages')
 }
 
 /* ------------------------------------------------------------------- plan */

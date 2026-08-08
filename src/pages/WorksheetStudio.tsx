@@ -24,7 +24,8 @@ import {
   IconTrash,
 } from '../ui/icons'
 import { usePrefs, useToasts } from '../lib/store'
-import { generateImage } from '../lib/imagegen'
+import { planJobs, useQueue } from '../lib/imageQueue'
+import { GenerateAllButton, useQueueCompletions } from '../ui/GenerateRun'
 import {
   deleteSavedImage,
   imagesForLesson,
@@ -37,11 +38,13 @@ export default function WorksheetStudio() {
   const { gradeId, subjectId, lessonId } = useParams()
   const { lesson, unit, loading, missing } = useLesson(gradeId, subjectId, lessonId)
 
-  const { promptTarget, setPromptTarget, styleOverride, setStyleOverride, openaiKey } = usePrefs()
+  const { promptTarget, setPromptTarget, styleOverride, setStyleOverride, openrouterKey, openaiKey } =
+    usePrefs()
   const push = useToasts((s) => s.push)
+  const enqueue = useQueue((s) => s.enqueue)
+  const queueJobs = useQueue((s) => s.jobs)
 
   const [saved, setSaved] = useState<Record<string, SavedImage>>({})
-  const [busy, setBusy] = useState<string | null>(null)
   const [openSpec, setOpenSpec] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
@@ -53,6 +56,10 @@ export default function WorksheetStudio() {
   useEffect(() => {
     void refresh()
   }, [refresh])
+
+  // Images land in IndexedDB one at a time during a run; re-read as they do so
+  // the page fills in live rather than only after a reload.
+  useQueueCompletions(lessonId, refresh)
 
   const specs = useMemo(
     () => lesson?.worksheet.sections.flatMap((s) => s.images ?? []) ?? [],
@@ -94,32 +101,29 @@ export default function WorksheetStudio() {
     })
     .join('\n\n')
 
+  const base = `/c/${gradeId}/${subjectId}`
+  const filled = specs.filter((s) => saved[s.id]).length
+  const missingCount = specs.length - filled
+  const hasKey = Boolean(openrouterKey.trim() || openaiKey.trim())
+  const busySpecs = new Set(
+    queueJobs
+      .filter((j) => j.lessonId === lesson.id && (j.status === 'running' || j.status === 'pending'))
+      .map((j) => j.specId),
+  )
+
+  /**
+   * A single slot goes through the same queue as a batch. One code path means
+   * one set of retry rules, one progress display, and no way for a stray
+   * single generation to race a run that is already going.
+   */
   async function generate(spec: ImageSpec) {
-    if (!openaiKey) {
+    if (!hasKey) {
       push('Add an API key in Settings to generate images in the app.', 'error')
       return
     }
-    setBusy(spec.id)
-    try {
-      const c = compose(spec)
-      const { blob } = await generateImage(c.prompt, spec.aspect, openaiKey)
-      const record: SavedImage = {
-        id: uid(),
-        specId: spec.id,
-        lessonId: lesson!.id,
-        image: blob,
-        prompt: c.prompt,
-        model: promptTarget,
-        createdAt: Date.now(),
-      }
-      await saveGeneratedImage(record)
-      await refresh()
-      push('Image generated and saved to this device.', 'success')
-    } catch (err) {
-      push(err instanceof Error ? err.message : 'Image generation failed.', 'error')
-    } finally {
-      setBusy(null)
-    }
+    const [job] = await planJobs([lesson!], { styleOverride, includeFilled: true })
+      .then((jobs) => jobs.filter((j) => j.specId === spec.id))
+    if (job) enqueue([job])
   }
 
   async function attach(spec: ImageSpec, file: File) {
@@ -130,15 +134,14 @@ export default function WorksheetStudio() {
       image: file,
       prompt: compose(spec).prompt,
       model: 'uploaded',
+      provider: 'uploaded',
+      aspect: spec.aspect,
       createdAt: Date.now(),
     }
     await saveGeneratedImage(record)
     await refresh()
     push('Image attached to this slot.', 'success')
   }
-
-  const base = `/c/${gradeId}/${subjectId}`
-  const filled = specs.filter((s) => saved[s.id]).length
 
   return (
     <div className="max-w-[1400px] mx-auto px-5 py-7 lg:py-9">
@@ -203,14 +206,25 @@ export default function WorksheetStudio() {
             </select>
           </label>
 
-          <div className="flex gap-2 ml-auto">
+          <div className="flex flex-wrap gap-2 ml-auto">
             <CopyButton
               text={allPrompts}
               label={`Copy all ${specs.length} prompts`}
               size="md"
               variant="secondary"
             />
-            <Button variant="primary" icon={<IconPrint size={15} />} onClick={() => window.print()}>
+            {missingCount > 0 && (
+              <GenerateAllButton
+                collect={async () => [lesson]}
+                scope="this worksheet"
+                label={`Generate ${missingCount} missing image${missingCount === 1 ? '' : 's'}`}
+              />
+            )}
+            <Button
+              variant={missingCount > 0 ? 'secondary' : 'primary'}
+              icon={<IconPrint size={15} />}
+              onClick={() => window.print()}
+            >
               Print worksheet
             </Button>
           </div>
@@ -351,7 +365,7 @@ export default function WorksheetStudio() {
                 composed={compose(spec)}
                 styleName={resolveStyle(spec, effectiveStyle).name}
                 saved={saved[spec.id]}
-                busy={busy === spec.id}
+                busy={busySpecs.has(spec.id)}
                 expanded={openSpec === spec.id}
                 onToggle={() => setOpenSpec((c) => (c === spec.id ? null : spec.id))}
                 onGenerate={() => void generate(spec)}
@@ -363,7 +377,7 @@ export default function WorksheetStudio() {
                     await refresh()
                   }
                 }}
-                canGenerate={Boolean(openaiKey)}
+                canGenerate={hasKey}
                 colour={colour}
               />
             ))

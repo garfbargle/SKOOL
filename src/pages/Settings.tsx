@@ -5,6 +5,7 @@ import { AVAILABLE_COURSES } from '../curriculum/registry'
 import { GRADES } from '../curriculum/taxonomy'
 import { applyTheme, useLearners, usePrefs, useToasts, type ThemeMode } from '../lib/store'
 import {
+  allSavedImages,
   deleteLearner,
   exportBackup,
   importBackup,
@@ -13,6 +14,8 @@ import {
 } from '../lib/db'
 import { Button, Section, Segmented, SUBJECT_COLOUR } from '../ui/primitives'
 import { IconDownload, IconTrash, IconUpload } from '../ui/icons'
+import { ModelPicker, OutputControls } from '../ui/ModelPicker'
+import { formatUsd } from '../lib/openrouter'
 import type { ModelTarget, StylePresetId } from '../curriculum/types'
 
 export default function Settings() {
@@ -23,10 +26,21 @@ export default function Settings() {
 
   const [usage, setUsage] = useState<{ usage: number; quota: number } | null>(null)
   const [showKey, setShowKey] = useState(false)
+  const [showLegacy, setShowLegacy] = useState(false)
+  const [spend, setSpend] = useState<{ images: number; usd: number } | null>(null)
 
   useEffect(() => {
     void storageEstimate().then(setUsage)
   }, [learners])
+
+  useEffect(() => {
+    void allSavedImages().then((images) =>
+      setSpend({
+        images: images.length,
+        usd: images.reduce((sum, i) => sum + (i.costUsd ?? 0), 0),
+      }),
+    )
+  }, [])
 
   async function doExport() {
     try {
@@ -86,11 +100,11 @@ export default function Settings() {
         {/* --------------------------------------------------- prompt prefs */}
         <Section
           title="Image prompt defaults"
-          hint="What the worksheet studio opens with. You can still change either per worksheet."
+          hint="The format prompts are written in when you copy them out. In-app generation picks the format that suits the model it is calling."
         >
           <div className="grid sm:grid-cols-2 gap-4">
             <label className="block">
-              <span className="text-[12px] font-medium muted block mb-1.5">Default model</span>
+              <span className="text-[12px] font-medium muted block mb-1.5">Prompt format</span>
               <select
                 value={prefs.promptTarget}
                 onChange={(e) => prefs.setPromptTarget(e.target.value as ModelTarget)}
@@ -138,29 +152,96 @@ export default function Settings() {
           hint="Optional. Without a key you can still copy every prompt into any generator."
         >
           <label className="block mb-3">
-            <span className="text-[12px] font-medium muted block mb-1.5">OpenAI API key</span>
+            <span className="text-[12px] font-medium muted block mb-1.5">OpenRouter API key</span>
             <div className="flex gap-2">
               <input
                 type={showKey ? 'text' : 'password'}
-                value={prefs.openaiKey}
-                onChange={(e) => prefs.setOpenaiKey(e.target.value)}
-                placeholder="sk-…"
+                value={prefs.openrouterKey}
+                onChange={(e) => prefs.setOpenrouterKey(e.target.value)}
+                placeholder="sk-or-v1-…"
                 spellCheck={false}
                 autoComplete="off"
                 className="flex-1 px-3 py-2 rounded-lg border bg-[var(--surface-2)] text-[13px] font-mono outline-none focus:border-blue-500"
               />
               <Button onClick={() => setShowKey((v) => !v)}>{showKey ? 'Hide' : 'Show'}</Button>
             </div>
+            <span className="block text-[11.5px] faint mt-1.5 leading-relaxed">
+              Create one at{' '}
+              <a
+                href="https://openrouter.ai/keys"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-blue-600 dark:text-blue-400 underline underline-offset-2"
+              >
+                openrouter.ai/keys
+              </a>
+              . One key reaches every image model below.
+            </span>
           </label>
-          <p className="text-[12.5px] muted leading-relaxed">
+
+          <p className="text-[12.5px] muted leading-relaxed mb-5">
             The key is stored in this browser's local storage and sent only to{' '}
             <code className="text-[11.5px] px-1 py-0.5 rounded bg-[var(--surface-3)]">
-              api.openai.com
-            </code>{' '}
-            when you press Generate. Skool has no backend — the site is static files on a CDN, so
-            there is nowhere for it to send your key even in principle. Generated images are saved
-            into this device's local database.
+              openrouter.ai
+            </code>
+            . Skool has no backend — the site is static files on a CDN, so there is nowhere for it to
+            send your key even in principle. Generated images are saved into this device's local
+            database and survive a refresh.
           </p>
+
+          <div className="border-t pt-4">
+            <h4 className="text-[12px] font-semibold uppercase tracking-wide faint mb-2.5">
+              Image model
+            </h4>
+            <ModelPicker />
+            <div className="mt-4">
+              <OutputControls />
+            </div>
+          </div>
+
+          {spend && spend.images > 0 && (
+            <div className="border-t mt-4 pt-4 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[13px] font-medium">Generated so far</p>
+                <p className="text-[12px] faint mt-0.5">
+                  {spend.images} image{spend.images === 1 ? '' : 's'} on this device
+                  {spend.usd === 0 && ' · cost not reported by the provider'}
+                </p>
+              </div>
+              {spend.usd > 0 && (
+                <p className="text-[20px] font-semibold tabular-nums shrink-0">
+                  {formatUsd(spend.usd)}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="border-t mt-4 pt-4">
+            <button
+              onClick={() => setShowLegacy((v) => !v)}
+              className="text-[12px] muted hover:text-[var(--text)] focus-ring rounded"
+            >
+              {showLegacy ? 'Hide' : 'Use an OpenAI key directly instead'}
+            </button>
+            {showLegacy && (
+              <label className="block mt-2.5">
+                <span className="text-[12px] font-medium muted block mb-1.5">OpenAI API key</span>
+                <input
+                  type="password"
+                  value={prefs.openaiKey}
+                  onChange={(e) => prefs.setOpenaiKey(e.target.value)}
+                  placeholder="sk-…"
+                  spellCheck={false}
+                  autoComplete="off"
+                  className="w-full px-3 py-2 rounded-lg border bg-[var(--surface-2)] text-[13px] font-mono outline-none focus:border-blue-500"
+                />
+                <span className="block text-[11.5px] faint mt-1.5 leading-relaxed">
+                  Sent to api.openai.com and always uses gpt-image-1. Only used when no OpenRouter
+                  key is set — that route has no model choice and no cost estimate.
+                </span>
+              </label>
+            )}
+          </div>
         </Section>
 
         {/* ------------------------------------------------------- learners */}

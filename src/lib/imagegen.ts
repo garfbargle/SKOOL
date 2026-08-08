@@ -1,11 +1,14 @@
 import type { AspectRatio } from '../curriculum/types'
+import { cropToAspect } from './openrouter'
 
 /**
- * Optional in-app image generation.
+ * Direct OpenAI image generation — the fallback path.
  *
- * The app is fully usable without this — copying a prompt into whatever
- * generator you already pay for is the default path. But if you paste an
- * OpenAI key into Settings, the worksheet studio can fill the slots directly.
+ * OpenRouter (see `openrouter.ts`) is the route everything prefers: it reaches
+ * every image model, quotes prices, and reports what each image actually cost.
+ * This exists for people who already had an OpenAI key configured here before
+ * that landed, so their setup keeps working untouched. It is fixed to
+ * gpt-image-1 and has no model choice and no cost estimate.
  *
  * The key is held in localStorage on this device and sent only to
  * api.openai.com. It is never transmitted to skool.c0di.com, which is a static
@@ -75,21 +78,18 @@ export async function generateImage(
   const json = (await res.json()) as { data?: { b64_json?: string; url?: string }[] }
   const first = json.data?.[0]
 
+  // Wide strips (3:1, 4:1) have no native size here, so they come back at
+  // 1536x1024 and get trimmed to the exact ratio — an uncropped result wastes
+  // most of the worksheet row.
   if (first?.b64_json) {
     const bytes = Uint8Array.from(atob(first.b64_json), (c) => c.charCodeAt(0))
-    return { blob: new Blob([bytes], { type: 'image/png' }), size }
+    const raw = new Blob([bytes], { type: 'image/png' })
+    return { blob: await cropToAspect(raw, aspect), size }
   }
   if (first?.url) {
     const img = await fetch(first.url)
-    return { blob: await img.blob(), size }
+    return { blob: await cropToAspect(await img.blob(), aspect), size }
   }
 
   throw new Error('The API returned no image data.')
 }
-
-/**
- * Wide strips (3:1, 4:1) are requested at 1536x1024 and then trimmed, because
- * no current model offers those ratios natively and an uncropped result wastes
- * most of the worksheet row.
- */
-export const NON_NATIVE_ASPECTS: AspectRatio[] = ['3:1', '4:1']

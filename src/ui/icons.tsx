@@ -244,6 +244,27 @@ export const IconLightbulb = (p: P) => (
   </Svg>
 )
 
+export const IconRefresh = (p: P) => (
+  <Svg {...p}>
+    <path d="M20 11a8 8 0 0 0-13.7-5.2L3 9" />
+    <path d="M3 4v5h5" />
+    <path d="M4 13a8 8 0 0 0 13.7 5.2L21 15" />
+    <path d="M21 20v-5h-5" />
+  </Svg>
+)
+
+export const IconStop = (p: P) => (
+  <Svg {...p}>
+    <rect x="6" y="6" width="12" height="12" rx="2" />
+  </Svg>
+)
+
+export const IconChevronDown = (p: P) => (
+  <Svg {...p}>
+    <path d="m6 9 6 6 6-6" />
+  </Svg>
+)
+
 export const SUBJECT_ICONS = {
   calculator: IconCalculator,
   book: IconBook,
