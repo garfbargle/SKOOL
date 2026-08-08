@@ -5,7 +5,8 @@ import { AVAILABLE_COURSES } from '../curriculum/registry'
 import { useLearners, usePrefs } from '../lib/store'
 import { scheduleWarm } from '../lib/search'
 import { Badge, Button, SUBJECT_COLOUR } from '../ui/primitives'
-import { IconChevron, IconGrid, IconPlay, IconSparkle, SUBJECT_ICONS } from '../ui/icons'
+import { SubjectTile } from '../ui/SubjectTile'
+import { IconChevron, IconGrid, IconPlay, IconSparkle } from '../ui/icons'
 import type { GradeId, SubjectId } from '../curriculum/types'
 
 function greeting() {
@@ -44,16 +45,16 @@ export default function Home() {
   const grade = active ? GRADE_BY_ID[active.gradeId as GradeId] : null
 
   return (
-    <div className="max-w-5xl mx-auto px-5 py-8 lg:py-12">
-      <header className="mb-8">
-        <h1 className="text-[28px] font-semibold tracking-tight">
+    <div className="max-w-5xl mx-auto px-5 sm:px-8 pt-10 pb-16 lg:pt-14">
+      <header className="mb-9">
+        <h1 className="text-[40px] lg:text-[52px] font-semibold tracking-[-0.03em] leading-[0.95]">
           {greeting()}
           {active ? `. Ready for ${active.name}?` : '.'}
         </h1>
-        <p className="muted mt-1.5 text-[15px] leading-relaxed max-w-2xl">
+        <p className="muted mt-3 text-[16px] max-w-2xl">
           {active
-            ? `Working at ${grade?.name ?? ''} level. Pick up where you left off, or jump into any subject.`
-            : 'Add a learner in the sidebar to track progress, or just browse the curriculum — everything works without one.'}
+            ? `Working at ${grade?.name ?? ''} level.`
+            : 'Add a learner to track progress — or just browse. Everything works without one.'}
         </p>
       </header>
 
@@ -109,32 +110,15 @@ export default function Home() {
               All grades →
             </Link>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {SUBJECTS.map((s) => {
-              const has = AVAILABLE_COURSES.has(`${active.gradeId}:${s.id}`)
-              const Icon = SUBJECT_ICONS[s.icon as keyof typeof SUBJECT_ICONS]
-              const colour = SUBJECT_COLOUR[s.id]
-              if (!has) {
-                return (
-                  <div key={s.id} className="surface p-4 opacity-45 select-none">
-                    <Icon size={18} className="faint" />
-                    <p className="text-[14px] font-semibold mt-2">{s.short}</p>
-                    <p className="text-[11.5px] faint mt-0.5">Coming soon</p>
-                  </div>
-                )
-              }
-              return (
-                <Link
-                  key={s.id}
-                  to={`/c/${active.gradeId}/${s.id}`}
-                  className="surface p-4 hover:shadow-md hover:-translate-y-0.5 transition-all focus-ring"
-                >
-                  <Icon size={18} style={{ color: colour }} />
-                  <p className="text-[14px] font-semibold mt-2">{s.short}</p>
-                  <p className="text-[11.5px] muted mt-0.5 line-clamp-2 leading-snug">{s.blurb}</p>
-                </Link>
-              )
-            })}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {SUBJECTS.map((s) => (
+              <SubjectTile
+                key={s.id}
+                subject={s}
+                gradeId={active.gradeId as GradeId}
+                available={AVAILABLE_COURSES.has(`${active.gradeId}:${s.id}`)}
+              />
+            ))}
           </div>
         </section>
       )}

@@ -131,8 +131,13 @@ export default function App() {
           ))}
         </nav>
 
-        <div className="mt-auto p-3 border-t">
-          <LearnerSwitcher />
+        <div className="mt-auto p-3 border-t flex items-center gap-1">
+          <div className="min-w-0 flex-1">
+            <LearnerSwitcher />
+          </div>
+          {/* The mobile header carries this too; without it the desktop layout
+              had no way to change theme short of visiting Settings. */}
+          <ThemeToggle />
         </div>
       </aside>
 

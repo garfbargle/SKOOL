@@ -103,6 +103,96 @@ body {
   color: var(--text-3);
 }
 
+/* ------------------------------------------------------------ subject tile
+ *
+ * The curriculum grid is 56 targets, so the tile has to carry meaning at a
+ * glance: colour says which subject, size says it is tappable, and the prose
+ * stays out of the way until you actually point at one. `--sc` is the subject
+ * accent, set per-tile by the component.
+ */
+
+.tile {
+  --tint: 9%;
+  --tint-hover: 17%;
+  background: color-mix(in srgb, var(--sc) var(--tint), var(--surface));
+  box-shadow: var(--shadow-card);
+  transition:
+    background 0.18s ease,
+    transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.18s ease;
+}
+
+.dark .tile {
+  --tint: 15%;
+  --tint-hover: 26%;
+}
+
+.tile:hover {
+  background: color-mix(in srgb, var(--sc) var(--tint-hover), var(--surface));
+  transform: translateY(-3px);
+  box-shadow:
+    0 10px 24px -10px color-mix(in srgb, var(--sc) 55%, transparent),
+    0 2px 6px -2px rgb(16 24 40 / 0.1);
+}
+
+.tile:active {
+  transform: translateY(-1px);
+}
+
+/* Not authored yet: same footprint so the grid keeps its rhythm, no colour
+ * and no shadow so it reads as absent rather than as a choice. */
+.tile-ghost {
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+  color: var(--text-3);
+}
+
+/* The reveal: collapsed to nothing, opened by the tile's hover or focus.
+ * Animating grid rows keeps the icon anchored while the text grows in. */
+.tile-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.2s ease;
+}
+
+.tile:hover .tile-reveal,
+.tile:focus-visible .tile-reveal,
+.tile-ghost:hover .tile-reveal {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.tile-reveal > * {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Grade blurbs sit in reserved space and simply fade, so pointing at a row
+ * never shifts the tiles underneath it. */
+.row-reveal {
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.row:hover .row-reveal,
+.row:focus-within .row-reveal {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  /* Touch has no hover, so nothing would ever open. Show the prose instead of
+     hiding it forever. */
+  .tile-reveal {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  .row-reveal {
+    opacity: 1;
+  }
+}
+
 .focus-ring {
   outline: 2px solid transparent;
   outline-offset: 2px;
@@ -128,6 +218,15 @@ body {
 }
 .scroll-thin::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* For short horizontal strips (the band filter) where a scrollbar is pure
+   noise — the overflow is obvious from the clipped last option. */
+.scroll-none {
+  scrollbar-width: none;
+}
+.scroll-none::-webkit-scrollbar {
+  display: none;
 }
 
 /* Prose used for lesson body copy. */

@@ -108,7 +108,7 @@ export function Segmented<T extends string>({
   return (
     <div
       role="tablist"
-      className="inline-flex rounded-lg bg-[var(--surface-3)] p-0.5 gap-0.5 overflow-x-auto scroll-thin max-w-full"
+      className="inline-flex rounded-full bg-[var(--surface-3)] p-1 gap-0.5 overflow-x-auto scroll-none max-w-full"
     >
       {options.map((o) => (
         <button
@@ -118,8 +118,8 @@ export function Segmented<T extends string>({
           title={o.title}
           onClick={() => onChange(o.value)}
           className={clsx(
-            'rounded-[6px] font-medium whitespace-nowrap transition-colors focus-ring',
-            size === 'sm' ? 'px-2.5 py-1 text-[12px]' : 'px-3 py-1.5 text-[13px]',
+            'rounded-full font-medium whitespace-nowrap transition-colors focus-ring',
+            size === 'sm' ? 'px-3 py-1 text-[12.5px]' : 'px-3.5 py-1.5 text-[13.5px]',
             value === o.value
               ? 'bg-[var(--surface)] shadow-sm text-[var(--text)]'
               : 'text-[var(--text-2)] hover:text-[var(--text)]',

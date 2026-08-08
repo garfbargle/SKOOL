@@ -37,25 +37,27 @@ export default function Course() {
   const stats = courseStats(course)
 
   return (
-    <div className="max-w-4xl mx-auto px-5 py-7 lg:py-9">
+    <div className="max-w-4xl mx-auto px-5 sm:px-8 pt-8 pb-16 lg:pt-10">
       <Link
         to="/browse"
-        className="inline-flex items-center gap-1.5 text-[13px] muted hover:text-[var(--text)] mb-5 focus-ring rounded"
+        className="inline-flex items-center gap-1.5 text-[13px] muted hover:text-[var(--text)] mb-6 focus-ring rounded"
       >
         <IconArrowLeft size={14} />
         All curriculum
       </Link>
 
       {/* -------------------------------------------------------- header */}
-      <header className="mb-7">
-        <div className="flex items-center gap-2 mb-2" style={{ color: colour }}>
-          <Icon size={18} />
-          <span className="text-[13px] font-semibold uppercase tracking-wide">
+      <header className="mb-8">
+        <div className="flex items-center gap-2 mb-3" style={{ color: colour }}>
+          <Icon size={20} />
+          <span className="text-[12.5px] font-semibold uppercase tracking-[0.08em]">
             {grade.name} · {subject.name}
           </span>
         </div>
-        <h1 className="text-[26px] font-semibold tracking-tight leading-tight">{course.title}</h1>
-        <p className="mt-3 text-[15px] muted leading-relaxed max-w-3xl">{course.overview}</p>
+        <h1 className="text-[34px] lg:text-[42px] font-semibold tracking-[-0.03em] leading-[1.02]">
+          {course.title}
+        </h1>
+        <p className="mt-4 text-[15px] muted leading-relaxed max-w-2xl">{course.overview}</p>
 
         <div className="flex flex-wrap gap-x-5 gap-y-2 mt-5 text-[13px]">
           <Stat label="units" value={stats.units} />

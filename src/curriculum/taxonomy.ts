@@ -33,7 +33,7 @@ export const SUBJECTS: Subject[] = [
     short: 'Math',
     accent: 'amber',
     icon: 'calculator',
-    blurb: 'Number sense, operations, geometry, measurement and data — built in the order the research says they stick.',
+    blurb: 'Number, operations, shape and data.',
   },
   {
     id: 'ela',
@@ -41,7 +41,7 @@ export const SUBJECTS: Subject[] = [
     short: 'ELA',
     accent: 'violet',
     icon: 'book',
-    blurb: 'Phonics, fluency, comprehension, vocabulary and writing, following the science of reading.',
+    blurb: 'Phonics, fluency, comprehension, writing.',
   },
   {
     id: 'science',
@@ -49,7 +49,7 @@ export const SUBJECTS: Subject[] = [
     short: 'Science',
     accent: 'emerald',
     icon: 'flask',
-    blurb: 'Phenomenon-first investigations aligned to NGSS three-dimensional learning.',
+    blurb: 'Phenomenon-first investigation, NGSS aligned.',
   },
   {
     id: 'social-studies',
@@ -57,7 +57,7 @@ export const SUBJECTS: Subject[] = [
     short: 'Social',
     accent: 'rose',
     icon: 'globe',
-    blurb: 'Civics, geography, economics and history through the C3 inquiry arc.',
+    blurb: 'Civics, geography, economics, history.',
   },
 ]
 
